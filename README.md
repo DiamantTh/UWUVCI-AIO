@@ -1,9 +1,11 @@
-# UWUVCI-AIO-WPF (ZestyTS's Fork) – V4 Redesign
+# UWUVCI-AIO-WPF (Fork of Fork) – V4 Redesign
 
 > **Disclaimer:**
 > This is **not** the official version of [UWUVCI-AIO-WPF](https://github.com/stuff-by-3-random-dudes/UWUVCI-AIO-WPF).
-> This fork contains my own changes, modifications, and improvements.
-> The itch.io page for Zesty's UWUVCI-V3 comes from this fork.
+> 
+> **Why fork of fork?** Started as a fork of ZestyTS's fork to experiment with a different architectural direction via "Vibe Coding" – exploring modern .NET 10 + cross-platform possibilities without the constraints of the legacy WPF codebase. This fork grew into a complete redesign proving the approach is viable and production-ready.
+> 
+> The V3 codebase on itch.io still comes from ZestyTS's fork. This V4 fork is an experimental direction that evolved into a full redesign.
 > No official support is provided; use at your own discretion.
 
 ---
