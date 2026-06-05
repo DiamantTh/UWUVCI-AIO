@@ -37,22 +37,21 @@ Datum: 6. Juni 2026
 ### Root-Level (sauber)
 ```
 UWUVCI-AIO-WPF/
-├── Rewrite/                    ← 1.5 GB (AKTIV)
-│   ├── UWUVCI.Core/
-│   ├── UWUVCI.Config/
-│   ├── UWUVCI.Tooling/
-│   ├── UWUVCI.ImagePipeline/
-│   ├── UWUVCI.App.Uno/
-│   ├── UWUVCI.Tests/           ← 80 Tests
-│   └── UWUVCI.Rewrite.slnx
+├── UWUVCI.Core/                ← Domain models, pipeline abstractions
+├── UWUVCI.Config/              ← TOML-based settings
+├── UWUVCI.Tooling/             ← Tool discovery and execution
+├── UWUVCI.ImagePipeline/       ← Image load/save/resize
+├── UWUVCI.App.Uno/             ← Uno Platform desktop app
+├── UWUVCI.Tests/               ← 80 Tests ✅
 │
-├── UWUVCI AIO WPF/             ← 13 MB (Legacy Referenz, später löschen)
-├── Scripts/                    ← 52 KB (historisch, später löschen)
-├── .vscode/                    ← 12 KB (Projekt-Konfiguration)
+├── UWUVCI.slnx                 ← Solution file
+├── Scripts/                    ← Release utilities (später löschen)
+├── .vscode/                    ← Projekt-Konfiguration
 │
-├── README.md                   ← Rewrite-fokussiert
+├── README.md                   ← Dokumentation
 ├── REWRITE_PLAN.md             ← 10 Phasen, alle abgehakt
 ├── CLEANUP.md                  ← Audit + Post-Phase-10 Tasks
+├── STATUS.md                   ← Projekt-Übersicht
 ├── LICENSE                     ← AGPL-3.0-or-later
 ├── .gitignore                  ← bin/, obj/, artifacts/, .DS_Store
 └── .git/                       ← 553 MB
@@ -73,29 +72,26 @@ UWUVCI-AIO-WPF/
 
 ## 🔄 Build- & Test-Status
 
-### Rewrite bauen
+### Build
 ```bash
-cd Rewrite
-dotnet build UWUVCI.Rewrite.slnx
+dotnet build UWUVCI.slnx
 # Ergebnis: 0 Fehler, 45 Warnungen (style-hints von MSTest)
 ```
 
 ### Tests ausführen
 ```bash
-cd Rewrite
-dotnet test UWUVCI.Rewrite.slnx
+dotnet test UWUVCI.slnx
 # Ergebnis: 80/80 Tests ✅ (727 ms)
 ```
 
 ### App starten (Dev)
 ```bash
-cd Rewrite/UWUVCI.App.Uno
 dotnet run --project UWUVCI.App.Uno/UWUVCI.App.Uno.csproj -f net10.0-desktop
 ```
 
 ### Portable Release bauen
 ```bash
-cd Rewrite/UWUVCI.App.Uno
+cd UWUVCI.App.Uno
 bash publish.sh linux        # → artifacts/dist/uwuvci-linux-x64.tar.gz (64 MB)
 bash publish.sh win          # → artifacts/dist/uwuvci-win-x64.zip (cross-compile)
 ```

@@ -159,8 +159,8 @@ Goal: create the modern structure without porting behavior yet.
 Execution note (2026-06-05):
 - Baseline findings from Phase 0/1 are treated as expected legacy-state signals, not rewrite blockers.
 - Missing .NET Framework 4.8 build support on Linux is expected for the legacy WPF project.
-- Uno templates were installed (`Uno.Templates`), and the rewrite scaffold is now created under `Rewrite/`.
-- Added central Uno SDK resolver at `Rewrite/global.json` (`Uno.Sdk` 6.5.36) so mixed-solution restore/build works.
+- Uno templates were installed (`Uno.Templates`), and the scaffold is now created at repository root.
+- Added central Uno SDK resolver at `global.json` (`Uno.Sdk` 6.5.36) so mixed-solution restore/build works.
 - Current repo state before scaffold: only legacy solution/projects (`UWUVCI AIO WPF.sln`, legacy app, MSTest, TokenGenerator).
 
 - [x] Create or prepare a new solution layout.
@@ -440,11 +440,11 @@ Exit criteria:
 
 Notes:
 - `PublishSingleFile=true` incompatible with Uno Platform's XAML resource resolver on Desktop/Skia.
-  Using directory publish + tar.gz/zip packaging instead (see `Rewrite/UWUVCI.App.Uno/publish.sh`).
+  Using directory publish + tar.gz/zip packaging instead (see `UWUVCI.App.Uno/publish.sh`).
 - ms-appx:/// URIs for resources in the own assembly must NOT include the assembly name prefix
   (correct: `ms-appx:///Themes/Theme.Dark.xaml`, wrong: `ms-appx:///UWUVCI.App.Uno/Themes/...`).
 - `DebugType=none` breaks Uno's `EmbeddedResourceInjectorTask`; portable PDB (default) required.
-- Runtime data paths: `Rewrite/UWUVCI.Core/Runtime/AppDataPaths.cs`
+- Runtime data paths: `UWUVCI.Core/Runtime/AppDataPaths.cs`
   Linux → ~/.local/share/UWUVCI-V3 (XDG_DATA_HOME), Windows → %LOCALAPPDATA%\UWUVCI-V3
 
 ## Phase 9 - WASM-Readiness Audit
@@ -539,7 +539,7 @@ Exit criteria:
 - `tmp_toolrunner.patch` (obsolete legacy patch)
 - `artifacts/` directory (232 MB publish output, git-ignored)
 - `TokenGenerator/` directory (legacy utility, unused in Rewrite)
-- `UWUVCI MSTest/` directory (legacy test suite, replaced by `Rewrite/UWUVCI.Tests`)
+- `UWUVCI MSTest/` directory (legacy test suite, replaced by `UWUVCI.Tests`)
 
 **Space freed:** ~240 MB
 
@@ -548,7 +548,7 @@ Exit criteria:
 - `Scripts/` directory – delete after first Rewrite release
 
 **Optimization opportunity (safe to clean anytime):**
-- `Rewrite/*/bin`, `Rewrite/*/obj` – run `dotnet clean` to reduce from 1.5 GB to ~100 MB (rebuilds on next `dotnet build`)
+- `*/bin`, `*/obj` – run `dotnet clean` to reduce from 1.5 GB to ~100 MB (rebuilds on next `dotnet build`)
 
 See [CLEANUP.md](CLEANUP.md) for full audit and post-Phase-10 action items.
 

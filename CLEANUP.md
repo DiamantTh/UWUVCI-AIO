@@ -7,9 +7,8 @@ Last updated: 6. Juni 2026 – Phase 10 Final Cleanup
 ### Repo Size
 
 ```
-Rewrite/                1.5 GB  (1.4 GB = bin/obj artifacts, regenerable)
+UWUVCI.Core/            1.5 GB  (1.4 GB = bin/obj artifacts, regenerable)
 .git/                   553 MB  (inevitable)
-UWUVCI AIO WPF/         13 MB   (legacy reference)
 Scripts/                52 KB   (release utilities)
 .vscode/                12 KB   (project config)
 ```
@@ -40,34 +39,21 @@ Scripts/                52 KB   (release utilities)
 
 ```
 UWUVCI-AIO-WPF/
-├── Rewrite/                           ← ACTIVE - Cross-platform .NET 10 rewrite
-│   ├── UWUVCI.Core/                  Core models, pipeline, abstractions
-│   ├── UWUVCI.Config/                TOML settings layer
-│   ├── UWUVCI.Tooling/               Tool runner, platform detection
-│   ├── UWUVCI.ImagePipeline/         Image I/O + custom TGA reader/writer
-│   ├── UWUVCI.App.Uno/               Uno Platform desktop app (Win + Linux)
-│   ├── UWUVCI.Tests/                 MSTest v3 suite (80 tests)
-│   ├── UWUVCI.Rewrite.slnx           Rewrite solution file
-│   └── .../bin, obj                  (git-ignored, ~1.4 GB, regenerable)
+├── UWUVCI.Core/                      Core models, pipeline, abstractions
+├── UWUVCI.Config/                    TOML settings layer
+├── UWUVCI.Tooling/                   Tool runner, platform detection
+├── UWUVCI.ImagePipeline/             Image I/O + custom TGA reader/writer
+├── UWUVCI.App.Uno/                   Uno Platform desktop app (Win + Linux)
+├── UWUVCI.Tests/                     MSTest v3 suite (80 tests)
+├── UWUVCI.slnx                       Solution file (active)
 │
-├── UWUVCI AIO WPF/                    ← LEGACY REFERENCE (keep for now)
-│   ├── Classes/, Helpers/, Services/ Legacy WPF implementation
-│   ├── UI/Windows/                  Legacy XAML Windows
-│   ├── **/Kopieren*                 20 duplicate test files (delete later)
-│   └── bin/, obj/                   (git-ignored)
+├── Scripts/                           Release utilities (delete after 1.0)
+├── .vscode/                           Project config
 │
-├── Scripts/                           ← RELEASE UTILITIES (historical)
-│   ├── Build-ProtectedRelease.ps1
-│   ├── New-ReleaseKey.ps1
-│   └── release-manifest.json
-│
-├── .vscode/                           ← PROJECT CONFIG
-│   └── settings.json, tasks.json
-│
-├── README.md                          ← Updated for Rewrite era
-├── REWRITE_PLAN.md                    ← 10 phases, all completed
-├── CLEANUP.md                         ← This file
-├── UWUVCI AIO WPF.sln                 ← Legacy solution (reference only)
+├── README.md                          Build + run instructions
+├── REWRITE_PLAN.md                    10 phases, all completed
+├── CLEANUP.md                         This file
+├── STATUS.md                          Project status
 ├── LICENSE, .gitignore, .gitattributes
 └── .git/
 ```
