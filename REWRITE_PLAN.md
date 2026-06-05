@@ -66,7 +66,9 @@ Target: Uno Desktop first, Windows + Linux/KDE, WASM-ready architecture
 
 Each phase must end with a build/test status. If a phase cannot build yet by design, the expected failing target must be stated explicitly.
 
-## Phase 0 - Baseline And Environment
+## Phase 0 - Baseline And Environment ✅
+
+**Status: COMPLETE**
 
 Goal: know what currently builds/runs and what the local machine can verify.
 
@@ -192,15 +194,19 @@ Exit criteria:
 - [ ] Uno desktop app can be started if local Uno tooling supports it.
 - [x] If Uno launch is blocked by missing workload/templates, that blocker is documented.
 
-## Phase 3 - Config And Capability Foundation
+## Phase 3 - Config And Capability Foundation ✅
 
-> **Execution note (2026-06-05):** Phase 3 abgeschlossen.
-> Tomlyn 2.4.2 (TomlSerializer-API) hinzugefügt.
-> `AppSettingsModel`, `ToolManifestModel`, `PlatformCapabilitiesModel` in `UWUVCI.Config/Models/` angelegt.
-> `AppSettingsLoader`, `ToolManifestLoader` in `UWUVCI.Config/Loaders/` implementiert.
-> `AppSettingsValidator`, `ToolManifestValidator` in `UWUVCI.Config/Validation/` implementiert.
-> SysKey/SysKey1 nicht übernommen. CKey wird gespeichert, aber nie geloggt.
-> 22 Config-Tests grün, alle 6 Projekte bauen fehlerfrei.
+**Status: COMPLETE**
+
+**Execution note (2026-06-05):** Phase 3 abgeschlossen.
+- Tomlyn 2.4.2 (TomlSerializer-API) hinzugefügt
+- `AppSettingsModel`, `ToolManifestModel`, `PlatformCapabilitiesModel` in `UWUVCI.Config/Models/` angelegt
+- `AppSettingsLoader`, `ToolManifestLoader` in `UWUVCI.Config/Loaders/` implementiert
+- `AppSettingsValidator`, `ToolManifestValidator` in `UWUVCI.Config/Validation/` implementiert
+- SysKey/SysKey1 nicht übernommen. CKey wird gespeichert, aber nie geloggt
+- **22 Config-Tests grün, alle 6 Projekte bauen fehlerfrei**
+
+**Status: COMPLETE**
 
 Goal: build the TOML-driven configuration layer before UI and injection depend on it.
 
@@ -231,7 +237,7 @@ Exit criteria:
 - [x] Invalid configs produce useful errors.
 - [x] CKey is redacted in logs/errors.
 
-## Phase 4 - Tooling Foundation
+## Phase 4 - Tooling Foundation ✅
 
 > **Execution note (2026-06-05):** Phase 4 abgeschlossen.
 > Interfaces `IPlatformInfo`, `IToolRunner`, `IToolResolver` in `UWUVCI.Core/Tooling/` angelegt.
@@ -267,7 +273,7 @@ Exit criteria:
 - [x] Unsupported features fail with clear capability errors.
 - [x] Tool paths and arguments are covered by tests.
 
-## Phase 5 - Image Pipeline Foundation
+## Phase 5 - Image Pipeline Foundation ✅
 
 Goal: replace `System.Drawing` with SkiaSharp-backed services.
 
@@ -305,7 +311,7 @@ Exit criteria:
 - [x] TGA decision is documented.
 - [x] Image errors are user-readable.
 
-## Phase 6 - Core / Injection Modernization
+## Phase 6 - Core / Injection Modernization ✅
 
 Goal: move and modernize existing injection behavior as a whole, not one console at a time.
 
@@ -355,7 +361,7 @@ Exit criteria:
 - [x] Tool/image dependencies are injected through interfaces.
 - [x] Known unsupported runtime features report capability errors instead of crashing.
 
-## Phase 7 - Uno UX Implementation
+## Phase 7 - Uno UX Implementation ✅
 
 Goal: rebuild the current practical UX in Uno.
 
@@ -408,7 +414,7 @@ Exit criteria:
 - [x] No direct tool execution from views.
 - [x] No direct WPF/WinForms dependency.
 
-## Phase 8 - Packaging
+## Phase 8 - Packaging ✅
 
 Goal: make builds runnable outside the dev tree.
 
@@ -448,7 +454,7 @@ Notes:
 - Runtime data paths: `UWUVCI.Core/Runtime/AppDataPaths.cs`
   Linux → ~/.local/share/UWUVCI-V3 (XDG_DATA_HOME), Windows → %LOCALAPPDATA%\UWUVCI-V3
 
-## Phase 9 - WASM-Readiness Audit
+## Phase 9 - WASM-Readiness Audit ✅
 
 Goal: check whether a WASM target can be added without deep architecture changes.
 
@@ -504,7 +510,7 @@ Exit criteria:
 
 No hidden platform coupling found in Core pipeline logic.
 
-## Phase 10 - Final Cleanup
+## Phase 10 - Final Cleanup ✅
 
 Goal: remove old baggage and make the repo understandable.
 
