@@ -77,7 +77,7 @@ public sealed partial class SettingsPage : Page
 
     private void Save_Click(object sender, RoutedEventArgs e)
     {
-        ViewModel.Save();
+        ViewModel.Save();  // fires SettingsSaved → App.OnSettingsSaved → ApplyTheme
         SaveStatus.Text       = "Settings saved.";
         SaveStatus.Visibility = Visibility.Visible;
     }

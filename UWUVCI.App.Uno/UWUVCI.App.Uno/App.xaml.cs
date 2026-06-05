@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Uno.Resizetizer;
 using UWUVCI.App.Uno.ViewModels;
 using UWUVCI.App.Uno.Views;
+using UWUVCI.Config.Models;
 
 namespace UWUVCI.App.Uno;
 
@@ -16,6 +17,10 @@ public partial class App : Application
     internal static ShellViewModel   Shell    { get; } = new();
     internal static SettingsViewModel Settings { get; } = new(ResolveSettingsPath());
     internal static InjectViewModel   Inject   { get; } = new();
+
+    // ---- theme state -------------------------------------------------------
+
+    private static string _currentTheme = "Dark";
 
     // ---- app startup -------------------------------------------------------
 
@@ -41,6 +46,50 @@ public partial class App : Application
         MainWindow.Title = "UWUVCI";
         MainWindow.SetWindowIcon();
         MainWindow.Activate();
+
+        // Apply saved theme on launch
+        ApplyTheme(Settings.Theme);
+
+        // Subscribe to live settings changes
+        SettingsViewModel.SettingsSaved += OnSettingsSaved;
+    }
+
+    private void OnSettingsSaved(AppSettingsModel model)
+    {
+        ApplyTheme(model.Theme ?? "Dark");
+    }
+
+    // ---- theme switching ---------------------------------------------------
+
+    /// <summary>
+    /// Swaps the theme ResourceDictionary in Application.Resources at runtime.
+    /// No restart required.
+    /// </summary>
+    internal static void ApplyTheme(string theme)
+    {
+        var normalized = theme?.Trim() ?? "Dark";
+        if (string.Equals(normalized, _currentTheme, StringComparison.OrdinalIgnoreCase))
+            return;
+
+        var uri = normalized.Equals("Light", StringComparison.OrdinalIgnoreCase)
+            ? new Uri("ms-appx:///Themes/Theme.Light.xaml")
+            : new Uri("ms-appx:///Themes/Theme.Dark.xaml");
+
+        var merged = Application.Current.Resources.MergedDictionaries;
+
+        // Remove the previous theme dict (last one added by convention)
+        for (int i = merged.Count - 1; i >= 0; i--)
+        {
+            var src = merged[i].Source?.OriginalString ?? "";
+            if (src.Contains("Theme.Dark") || src.Contains("Theme.Light"))
+            {
+                merged.RemoveAt(i);
+                break;
+            }
+        }
+
+        merged.Add(new ResourceDictionary { Source = uri });
+        _currentTheme = normalized;
     }
 
     void OnNavigationFailed(object sender, NavigationFailedEventArgs e)

@@ -6,11 +6,21 @@ namespace UWUVCI.App.Uno.ViewModels;
 /// <summary>
 /// Drives the Settings page.
 /// Loads/saves AppSettingsModel via AppSettingsLoader.
+/// Fires <see cref="SettingsSaved"/> after every successful save so subscribers
+/// (App, ShellPage) can react immediately – e.g. live theme switching.
 /// </summary>
 public sealed class SettingsViewModel : ObservableObject
 {
     private readonly string _settingsPath;
     private AppSettingsModel _model;
+
+    // ---- global change notification ----------------------------------------
+
+    /// <summary>
+    /// Raised after <see cref="Save"/> completes.
+    /// Passes the saved model so subscribers can react without re-reading disk.
+    /// </summary>
+    public static event Action<AppSettingsModel>? SettingsSaved;
 
     // ---- properties bound to Settings page ---------------------------------
 
@@ -56,8 +66,12 @@ public sealed class SettingsViewModel : ObservableObject
             : new AppSettingsModel();
     }
 
-    /// <summary>Persist the current model to disk.</summary>
-    public void Save() => AppSettingsLoader.SaveToFile(_model, _settingsPath);
+    /// <summary>Persist the current model to disk and notify all subscribers.</summary>
+    public void Save()
+    {
+        AppSettingsLoader.SaveToFile(_model, _settingsPath);
+        SettingsSaved?.Invoke(_model);
+    }
 
     /// <summary>Reload from disk (discards unsaved changes).</summary>
     public void Reload()
