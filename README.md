@@ -118,10 +118,3 @@ See [REWRITE_PLAN.md](REWRITE_PLAN.md) for the full phase-by-phase breakdown.
 | 10 – Final cleanup | ✅ | Repository reorganization, documentation, namespace cleanup |
 
 **Next phase:** Injection service implementation (console-specific injection logic)
-
----
-
-## Community
-
-* Discord: [https://discord.gg/mPZpqJJVmZ](https://discord.gg/mPZpqJJVmZ)
-* Video guide: [YouTube Playlist](https://www.youtube.com/watch?v=1vzD_R-xPx4&list=PLbQMtrmXFIxQ1hpvu9m1th41vsaqnZ2Id)
