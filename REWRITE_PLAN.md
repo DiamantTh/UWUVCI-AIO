@@ -51,17 +51,18 @@ Target: Uno Desktop first, Windows + Linux/KDE, WASM-ready architecture
 
 ## Phase Overview
 
-- [ ] Phase 0: Baseline and environment.
-- [ ] Phase 1: Source inventory and risk map.
-- [ ] Phase 2: New solution/project scaffold.
+- [x] Phase 0: Baseline and environment.
+- [x] Phase 1: Source inventory and risk map.
+- [x] Phase 2: New solution/project scaffold.
 - [x] Phase 3: Config and platform capability foundation.
 - [x] Phase 4: Tooling foundation.
 - [x] Phase 5: Image pipeline foundation.
 - [x] Phase 6: Core/injection modernization.
 - [x] Phase 7: Uno UX implementation.
-- [ ] Phase 8: Packaging and Linux/AppImage path.
-- [ ] Phase 9: WASM-readiness audit.
-- [ ] Phase 10: Final migration cleanup.
+- [x] Phase 8: Packaging and Linux/AppImage path.
+- [x] Phase 9: WASM-readiness audit.
+- [x] Phase 10: Final migration cleanup.
+- [ ] **Phase 11: Injection service implementation** (console-specific logic, MVP-first)
 
 Each phase must end with a build/test status. If a phase cannot build yet by design, the expected failing target must be stated explicitly.
 
@@ -543,9 +544,9 @@ Exit criteria:
 
 **Space freed:** ~240 MB
 
-**Deferred deletion (still referenced as legacy baseline):**
-- `UWUVCI AIO WPF/` directory – delete after Injection pipeline is feature-complete and validated
-- `Scripts/` directory – delete after first Rewrite release
+**Deferred deletion (now addressed in Phase 11):**
+- `UWUVCI AIO WPF/` directory – will be used as legacy reference for Phase 11 porting
+- `Scripts/` directory – keep for reference until Phase 11 complete
 
 **Optimization opportunity (safe to clean anytime):**
 - `*/bin`, `*/obj` – run `dotnet clean` to reduce from 1.5 GB to ~100 MB (rebuilds on next `dotnet build`)
@@ -562,6 +563,120 @@ See [CLEANUP.md](CLEANUP.md) for full audit and post-Phase-10 action items.
 - [ ] Windows launch tested when a Windows system is available.
 - [x] Published Linux build launch tested.
 - [ ] AppImage launch tested only when AppImage target is implemented.
+
+## Phase 11 - Injection Service Implementation
+
+Goal: Port console-specific injection logic from legacy project and modernize within V4 architecture.
+
+**Status: NOT YET STARTED (ready to begin)**
+
+Supported consoles (from original):
+- [ ] **GCN** (GameCube) – `WiiInjectService` (uses wit, nfs2iso2nfs, copy icon/banner)
+- [ ] **Wii** – `WiiInjectService` (uses wit, nfs2iso2nfs, Nintendont config)
+- [ ] **N64** – `N64InjectService` (uses N64Converter, RetroInject, video filter)
+- [ ] **NES** – (legacy `NESInjectService`)
+- [ ] **SNES** – (legacy `SNESInjectService`)
+- [ ] **GBA** – (legacy `GBAInjectService`)
+- [ ] **NDS** – (legacy `NDSInjectService`)
+- [ ] **TurboGrafx** – (legacy `TurboGrafiInjectService`)
+- [ ] **MSX** – (legacy `MSXInjectService`)
+
+### 11.1 – GCN/Wii MVP (First)
+
+Port GCN (GameCube) injection to demonstrate the pattern. Wii follows same logic.
+
+**Tasks:**
+- [ ] Read legacy `Classes/Injection.cs` + `Services/GCNInjectService.cs` from UWUVCI AIO WPF/
+- [ ] Extract step sequence: icon copy → banner copy → .app repack → NFS wrapping → title creation
+- [ ] Create `UWUVCI.Services/GCNInjectService.cs` as `IGcnInjectStep` implementations
+- [ ] Port tool argument generation (wit, nfs2iso2nfs commands)
+- [ ] Create unit tests for each step (Golden files for commands, paths, error cases)
+- [ ] Integrate into `InjectViewModel` → call via `IInjectPipeline`
+- [ ] Manual test: inject real GCN ROM → launch on Wii U
+
+**Legacy reference files:**
+- `UWUVCI AIO WPF/Services/GCNInjectService.cs`
+- `UWUVCI AIO WPF/Classes/Injection.cs` (orchestration)
+- `UWUVCI AIO WPF/Helpers/ToolRunner.cs` (tool execution pattern – now abstracted in V4 `IToolRunner`)
+
+**New files to create:**
+- `UWUVCI.Services/` (new project, references Core + Tooling + ImagePipeline)
+- `UWUVCI.Services/IGcnInjectStep.cs` (marker interface extending `IInjectStep`)
+- `UWUVCI.Services/GCN/CopyBootImageStep.cs`
+- `UWUVCI.Services/GCN/CopyBannerStep.cs`
+- `UWUVCI.Services/GCN/RepackAppStep.cs`
+- `UWUVCI.Services/GCN/WrapToNfsStep.cs`
+- `UWUVCI.Services/GCN/CreateTitleMetaStep.cs`
+- `UWUVCI.Tests/GcnInjectTests.cs` (golden-file tests for wit/nfs2iso2nfs calls)
+
+**Exit criteria:**
+- [ ] GCN inject succeeds from UI (app ROM → WiiU-ready file)
+- [ ] All GCN steps have unit tests
+- [ ] Tool arguments are validated against legacy behavior
+- [ ] Error handling matches original (missing tools, ROM validation, disk space)
+- [ ] 15–20 new tests added (all green)
+
+### 11.2 – Wii (Second)
+
+Wii follows GCN pattern but with Nintendont-specific config.
+
+- [ ] Port `WiiInjectService` → `WiiInjectStep` implementations
+- [ ] Same tool logic (wit, nfs2iso2nfs)
+- [ ] Add Nintendont config handling (video, controller remapping)
+- [ ] Tests for Wii-specific steps
+
+### 11.3 – N64 (Third)
+
+Different tool stack (N64Converter, RetroInject, video filter).
+
+- [ ] Port `N64InjectService`
+- [ ] Extract video filter logic (if present)
+- [ ] Tool argument generation for N64-specific commands
+- [ ] Tests
+
+### 11.4 – Legacy Consoles (NES, SNES, GBA, NDS, TurboGrafx, MSX)
+
+Port remaining services.
+
+- [ ] Each console one task per session (focus, small scope)
+- [ ] Extract tool calls + argument generation
+- [ ] Golden-file tests per console
+
+**Total new unit tests expected: 80+ across all consoles**
+
+### Strategy
+
+1. **Port one console at a time** (GCN first, proven pattern, then Wii/N64/others)
+2. **For each console:**
+   - [ ] Read legacy service code
+   - [ ] Identify pipeline steps
+   - [ ] Extract tool calls and argument generation
+   - [ ] Implement as `IInjectStep`-derived classes
+   - [ ] Write golden-file tests
+   - [ ] Integrate into `InjectViewModel`
+3. **Reuse abstractions** already built in Phases 3–7:
+   - `IToolRunner` (replaces direct `Process.Start`)
+   - `IImageService` (boot/banner images)
+   - `IProgressReporter` (UI feedback)
+   - `IJobLogger` (per-step logging)
+
+### Verification Commands
+
+```bash
+# After each console is ported:
+dotnet test --filter "TestCategory=Injection"
+dotnet build
+dotnet run --project UWUVCI.App.Uno --framework net10.0-desktop
+# Manual: select console, pick ROM, inject, verify output
+```
+
+### Known Challenges
+
+- **Tool availability**: GCN/Wii/N64 require external tools (wit, nfs2iso2nfs, N64Converter, etc.)
+  → Mitigation: use mock `IToolRunner` for unit tests; separate integration test suite for real tools.
+- **ROM validation**: original used CRC/checksums; port as validation steps.
+- **Path handling**: legacy mixed absolute/relative paths; ensure all resolved via `AppDataPaths` in V4.
+- **Error recovery**: original had silent failures in some cases; make explicit in V4.
 
 ## Bug / Risk Ledger
 
