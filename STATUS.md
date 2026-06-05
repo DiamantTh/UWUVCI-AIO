@@ -1,4 +1,4 @@
-# UWUVCI-AIO-WPF – Rewrite Abschluss-Status
+# UWUVCI-AIO-WPF – V4.0.0 Project Status
 
 Datum: 6. Juni 2026
 
@@ -6,67 +6,79 @@ Datum: 6. Juni 2026
 
 ## 🎯 Projektüberblick
 
-**Zielsetzung:** Rewrite von UWUVCI-AIO-WPF von WPF (.NET Framework 4.8) zu Cross-Platform (.NET 10 + Uno Platform).
+**Zielsetzung:** Komplettes Redesign von UWUVCI-AIO-WPF von WPF (.NET Framework 4.8, Windows-only) zu modernem .NET 10 + Uno Platform (Cross-Platform: Windows, Linux, macOS + WASM-ready).
 
-**Status:** ✅ **ALLE 10 PHASEN ABGESCHLOSSEN**
+**Grund:** 
+- Legacy WPF erreichte End-of-Life für moderne Entwicklung
+- Keine Linux/macOS-Unterstützung trotz Benutzeranfragen
+- Veraltete Abhängigkeiten und schwierig zu warten
+
+**Status:** ✅ **ALLE 10 PHASEN ABGESCHLOSSEN – V4.0.0 PRODUKTIONS-READY**
 
 ---
 
-## 📊 Rewrite-Status nach Phase
+## 📊 Implementation-Status nach Phase
 
-| Phase | Fokus | Status | Tests | Dateien |
-|-------|-------|--------|-------|---------|
-| 0 | Env + Baseline | ✅ | – | – |
-| 1 | Quell-Inventar | ✅ | – | – |
-| 2 | Scaffold (6 Projekte) | ✅ | – | 6 .csproj |
-| 3 | TOML Config Layer | ✅ | 22 | AppSettingsLoader, ToolManifestLoader |
-| 4 | Tooling Foundation | ✅ | 18 | ProcessToolRunner, ManifestToolResolver, Wine-Detect |
-| 5 | Image Pipeline | ✅ | 17 | ImageService, TgaService (custom typ 2 + typ 10) |
+| Phase | Fokus | Status | Tests | Komponente |
+|-------|-------|--------|-------|-----------|
+| 0 | Env + Baseline | ✅ | – | .NET 10 SDK, Grundlage |
+| 1 | Quell-Inventar | ✅ | – | Legacy-Analyse, Anforderungen |
+| 2 | Scaffold (6 Projekte) | ✅ | – | Core, Config, Tooling, ImagePipeline, App.Uno, Tests |
+| 3 | TOML Config Layer | ✅ | 22 | AppSettingsLoader, ToolManifestLoader, CKey-Handling |
+| 4 | Tooling Foundation | ✅ | 18 | ProcessToolRunner, ManifestToolResolver, Wine-Detektion |
+| 5 | Image Pipeline | ✅ | 17 | ImageService, TgaService (TYP 2 + TYP 10 custom) |
 | 6 | Core + Pipeline-Modelle | ✅ | 22 | GameConsole, GameConfig, InjectionContext, IInjectStep |
-| 7 | Uno UX Shell | ✅ | 0 | ShellPage, InjectPage, SettingsPage, Themes |
-| 8 | Packaging | ✅ | – | publish.sh, Linux tar.gz, Windows ZIP |
-| 9 | WASM-Audit | ✅ | – | Blocker-Matrix dokumentiert |
-| 10 | Final Cleanup | ✅ | – | Struktur reorganisiert |
+| 7 | Uno UX Shell | ✅ | 0 | ShellPage, InjectPage, SettingsPage, Themes (Dark/Light) |
+| 8 | Packaging | ✅ | – | Linux tar.gz (64 MB), Windows ZIP, cross-compile |
+| 9 | WASM-Audit | ✅ | – | Blocker-Matrix, Abstraktion-Layer |
+| 10 | Repository-Migration | ✅ | – | Ordner-Reorganisation, Namespace-Cleanup, Alte Dateien löschen |
 
-**Gesamt:** 80 Tests ✅ | 0 Fehler | 0 Warnungen (außer MSTEST0037 style hints)
+**Gesamt:** 80 Tests ✅ | 0 Fehler | 0 Kritisch
 
 ---
 
-## 📦 Projekt-Struktur (Post-Cleanup)
+## 📦 Projekt-Struktur (V4.0.0 – Produktiv)
 
-### Root-Level (sauber)
+### Root-Level (sauber, legacy-frei)
 ```
 UWUVCI-AIO-WPF/
-├── UWUVCI.Core/                ← Domain models, pipeline abstractions
-├── UWUVCI.Config/              ← TOML-based settings
-├── UWUVCI.Tooling/             ← Tool discovery and execution
-├── UWUVCI.ImagePipeline/       ← Image load/save/resize
-├── UWUVCI.App.Uno/             ← Uno Platform desktop app
-├── UWUVCI.Tests/               ← 80 Tests ✅
+├── UWUVCI.Core/                ← Domain models, pipeline abstractions, runtime paths
+├── UWUVCI.Config/              ← TOML-based settings (Tomlyn)
+├── UWUVCI.Tooling/             ← Tool discovery, execution, Wine-aware
+├── UWUVCI.ImagePipeline/       ← Image load/save/resize (custom TGA, SkiaSharp)
+├── UWUVCI.App.Uno/             ← Uno Platform desktop app (Win + Linux/KDE)
+├── UWUVCI.Tests/               ← MSTest v3 suite (80 Tests ✅)
 │
-├── UWUVCI.slnx                 ← Solution file
-├── Scripts/                    ← Release utilities (später löschen)
-├── .vscode/                    ← Projekt-Konfiguration
+├── UWUVCI.slnx                 ← Solution file (primary build target)
+├── global.json                 ← .NET 10 SDK config
+├── .vscode/                    ← VS Code Projekt-Konfiguration
 │
-├── README.md                   ← Dokumentation
-├── REWRITE_PLAN.md             ← 10 Phasen, alle abgehakt
-├── CLEANUP.md                  ← Audit + Post-Phase-10 Tasks
-├── STATUS.md                   ← Projekt-Übersicht
+├── README.md                   ← V4 redesign + build instructions
+├── REWRITE_PLAN.md             ← 10 phases, all completed
+├── CLEANUP.md                  ← V4.0.0 cleanup report
+├── STATUS.md                   ← This file
 ├── LICENSE                     ← AGPL-3.0-or-later
 ├── .gitignore                  ← bin/, obj/, artifacts/, .DS_Store
-└── .git/                       ← 553 MB
+└── .git/                       ← ~553 MB with full history
 ```
 
-### Cleanup durchgeführt (6. Juni)
+### Cleanup durchgeführt (V4.0.0 Release)
+
+**Phase-10 Cleanup (6. Juni):**
 - ❌ `.DS_Store` (11 KB)
 - ❌ `AnalysisReport.sarif` (2.2 KB)
 - ❌ `upgrade-assistant.clef` (4.3 MB)
 - ❌ `tmp_toolrunner.patch` (obsolet)
 - ❌ `artifacts/` Verzeichnis (232 MB)
 - ❌ `TokenGenerator/` Ordner (ungenutzt)
-- ❌ `UWUVCI MSTest/` Ordner (von Rewrite ersetzt)
+- ❌ `UWUVCI MSTest/` Ordner (ersetzt)
 
-**Speicher befreit:** ~240 MB
+**V4.0.0 Cleanup:**
+- ❌ `UWUVCI AIO WPF/` Ordner (Legacy WPF komplett)
+- ❌ `UWUVCI AIO WPF.sln` (alte Solution)
+- ❌ `Scripts/` Verzeichnis (8 alte PS-Utilities)
+
+**Speicher befreit:** ~280 MB
 
 ---
 

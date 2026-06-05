@@ -1,41 +1,46 @@
 # Repository Cleanup & Organization
 
-Last updated: 6. Juni 2026 – Phase 10 Final Cleanup
+Last updated: 6. Juni 2026 – V4.0.0 Final Cleanup
 
 ## Repository Status
 
 ### Repo Size
 
 ```
-UWUVCI.Core/            1.5 GB  (1.4 GB = bin/obj artifacts, regenerable)
-.git/                   553 MB  (inevitable)
-Scripts/                52 KB   (release utilities)
-.vscode/                12 KB   (project config)
+UWUVCI.Core/            ~1.5 GB (1.4 GB = bin/obj artifacts, regenerable)
+.git/                   ~553 MB (inevitable with history)
+.vscode/                ~12 KB  (project config)
 ```
 
 **Total:** ~2.1 GB (excluding .git: ~1.5 GB)
 
 ### Cleanup Executed (6. Juni 2026)
 
-✅ Deleted:
+✅ Phase 10 Deleted:
 - `.DS_Store` (11 KB macOS metadata)
-- `AnalysisReport.sarif` (2.2 KB analysis report from Phase 0)
+- `AnalysisReport.sarif` (2.2 KB analysis report)
 - `upgrade-assistant.clef` (4.3 MB upgrade wizard output)
-- `tmp_toolrunner.patch` (obsolete legacy patch)
+- `tmp_toolrunner.patch` (obsolete patch)
 - `artifacts/` directory (232 MB publish output, git-ignored)
-- `TokenGenerator/` directory (legacy utility, unused in Rewrite)
-- `UWUVCI MSTest/` directory (legacy test suite, replaced by Rewrite/UWUVCI.Tests)
+- `TokenGenerator/` directory (legacy utility)
+- `UWUVCI MSTest/` directory (legacy test suite)
 
-**Space freed:** ~240 MB
+✅ V4.0.0 Cleanup:
+- `UWUVCI AIO WPF/` directory (legacy WPF project)
+- `UWUVCI AIO WPF.sln` (legacy solution)
+- `Scripts/` directory (8 PowerShell release utilities)
+
+**Total space freed:** ~280 MB
 
 ✅ Verified:
-- `.gitignore` correctly excludes: `bin/`, `obj/`, `artifacts/`, `.DS_Store`, build outputs
-- `README.md` refactored for Rewrite era
+- `.gitignore` correctly excludes: `bin/`, `obj/`, `artifacts/`, `.DS_Store`
+- `README.md` refactored for V4 era + cross-platform highlights
 - `REWRITE_PLAN.md` fully documented (10 phases completed)
+- No references to legacy WPF project remain in codebase
 
 ---
 
-## Active Directory Structure
+## Active Directory Structure (V4.0.0)
 
 ```
 UWUVCI-AIO-WPF/
@@ -45,32 +50,26 @@ UWUVCI-AIO-WPF/
 ├── UWUVCI.ImagePipeline/             Image I/O + custom TGA reader/writer
 ├── UWUVCI.App.Uno/                   Uno Platform desktop app (Win + Linux)
 ├── UWUVCI.Tests/                     MSTest v3 suite (80 tests)
-├── UWUVCI.slnx                       Solution file (active)
+├── UWUVCI.slnx                       Solution file (primary)
+├── .vscode/                          Project config
 │
-├── Scripts/                           Release utilities (delete after 1.0)
-├── .vscode/                           Project config
-│
-├── README.md                          Build + run instructions
+├── README.md                          V4 redesign + build instructions
 ├── REWRITE_PLAN.md                    10 phases, all completed
-├── CLEANUP.md                         This file
-├── STATUS.md                          Project status
-├── LICENSE, .gitignore, .gitattributes
+├── CLEANUP.md                         This file (v4 summary)
+├── STATUS.md                          Project status snapshot
+├── LICENSE                            AGPL-3.0-or-later
+├── .gitignore, .gitattributes
 └── .git/
 ```
 
 ---
 
-## Remaining Cleanup Tasks (Post-Phase-10)
+## Future Optimizations
 
-| Task | Blocker | Schedule |
-|------|---------|----------|
-| Delete `UWUVCI AIO WPF/` directory | Legacy reference still active during Rewrite | After Injection pipeline feature-complete |
-| Delete `Scripts/` directory | Historic reference | After first Rewrite release |
-| Clean `dotnet clean` on `Rewrite/` | Reduces 1.5 GB to ~100 MB | Developer choice (rebuild after clean) |
-| Review & delete Kopieren-Dateien | Legacy test artifacts | With `UWUVCI AIO WPF/` deletion |
-
-**Safe to clean NOW (no blocking references):**
-- ✅ Build artifacts: `dotnet clean` in `Rewrite/` (lowers disk from 1.5 GB to ~100 MB, rebuilds on next `dotnet build`)
+| Task | Benefit | Timing |
+|------|---------|--------|
+| Run `dotnet clean` | Reduce 1.5 GB → ~100 MB (regenerable) | Developer choice, anytime |
+| .vscode cleanup | Remove old workspace settings | Post-feature-complete |
 
 ---
 
@@ -94,21 +93,20 @@ artifacts/
 
 ---
 
-## Notes
+## Repository Health Summary (V4.0.0)
 
-- **Legacy WPF project:** Kept as reference during active Rewrite. Safe deletion after injection pipeline validates against legacy behavior.
-- **Build caches:** The `1.4 GB` in `Rewrite/bin/obj` can be safely cleaned with `dotnet clean` – will rebuild on next `dotnet build`.
-- **Publish outputs:** Any `artifacts/` directory created by `Rewrite/UWUVCI.App.Uno/publish.sh` are git-ignored and can be deleted locally.
+✅ **Cleanup complete:**
+- ❌ No legacy WPF project
+- ❌ No old solution file
+- ❌ No release scripts (superseded by `publish.sh`)
+- ❌ No temporary files or analysis reports
+- ✅ Only modern .NET 10 codebase remains
 
----
+✅ **Ready for:**
+- Feature development (Injection service implementation)
+- Cross-platform testing (Windows, Linux, macOS)
+- Portable release builds (tar.gz, ZIP)
+- Future WASM integration
 
-## Repository Health
+**Optional optimization:** Run `dotnet clean` to reduce local disk from 1.5 GB to ~100 MB (rebuilds automatically on next `dotnet build`).
 
-✅ Clean state (post-Phase-10):
-- No stale analysis reports
-- No build artifacts committed
-- No temporary patches
-- No macOS metadata
-- No legacy utility folders not referenced in Rewrite
-
-**Recommended next step:** `dotnet clean` in Rewrite/ to reduce local disk footprint from 1.5 GB to ~100 MB.
