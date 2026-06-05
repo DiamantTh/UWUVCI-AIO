@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSTest" Version="4.0.1" />
+    <PackageReference Include="SkiaSharp" Version="3.119.4" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="3.119.4" />
+    <PackageReference Include="Tomlyn" Version="2.4.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\UWUVCI.Core\UWUVCI.Core.csproj" />
+    <ProjectReference Include="..\UWUVCI.Tooling\UWUVCI.Tooling.csproj" />
+    <ProjectReference Include="..\UWUVCI.ImagePipeline\UWUVCI.ImagePipeline.csproj" />
+    <ProjectReference Include="..\UWUVCI.Config\UWUVCI.Config.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/UWUVCI.App.Uno/">
+    <Project Path="UWUVCI.App.Uno/UWUVCI.App.Uno/UWUVCI.App.Uno.csproj" />
+  </Folder>
+  <Project Path="UWUVCI.Config/UWUVCI.Config.csproj" />
+  <Project Path="UWUVCI.Core/UWUVCI.Core.csproj" />
+  <Project Path="UWUVCI.ImagePipeline/UWUVCI.ImagePipeline.csproj" />
+  <Project Path="UWUVCI.Tests/UWUVCI.Tests.csproj" />
+  <Project Path="UWUVCI.Tooling/UWUVCI.Tooling.csproj" />
+</Solution>

@@ -1,0 +1,96 @@
+﻿<Page x:Class="UWUVCI.App.Uno.Views.InjectPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:local="using:UWUVCI.App.Uno.Views"
+      Background="{ThemeResource AppBackgroundBrush}">
+
+  <ScrollViewer Padding="24">
+    <StackPanel Spacing="20" MaxWidth="680">
+
+      <!-- Title -->
+      <TextBlock Text="Inject"
+                 FontSize="24" FontWeight="SemiBold"
+                 Foreground="{ThemeResource AppTextBrush}"/>
+
+      <!-- Console selector -->
+      <StackPanel Spacing="6">
+        <TextBlock Text="Console"
+                   Foreground="{ThemeResource AppMutedTextBrush}" FontSize="12"/>
+        <ComboBox ItemsSource="{x:Bind ViewModel.AvailableConsoles}"
+                  SelectedItem="{x:Bind ViewModel.SelectedConsole, Mode=TwoWay}"
+                  Background="{ThemeResource AppCardBrush}"
+                  Foreground="{ThemeResource AppTextBrush}"
+                  HorizontalAlignment="Left" MinWidth="200"/>
+      </StackPanel>
+
+      <!-- ROM path -->
+      <StackPanel Spacing="6">
+        <TextBlock Text="ROM file"
+                   Foreground="{ThemeResource AppMutedTextBrush}" FontSize="12"/>
+        <Grid ColumnSpacing="8">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+          </Grid.ColumnDefinitions>
+          <TextBox Grid.Column="0"
+                   Text="{x:Bind ViewModel.RomPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                   PlaceholderText="Choose ROM file…"
+                   Background="{ThemeResource AppCardBrush}"
+                   Foreground="{ThemeResource AppTextBrush}"/>
+          <Button Grid.Column="1" Content="Browse" Click="BrowseRom_Click"
+                  Background="{ThemeResource AppSurfaceAltBrush}"
+                  Foreground="{ThemeResource AppTextBrush}"/>
+        </Grid>
+      </StackPanel>
+
+      <!-- Inject / Cancel -->
+      <StackPanel Orientation="Horizontal" Spacing="12">
+        <Button Content="Inject"
+                Click="Inject_Click"
+                IsEnabled="{x:Bind ViewModel.CanInject, Mode=OneWay}"
+                Background="{ThemeResource AppAccentBrush}"
+                Foreground="{ThemeResource AppTextOnAccentBrush}"
+                Padding="20,10" CornerRadius="6"/>
+        <Button Content="Cancel"
+                Click="Cancel_Click"
+                IsEnabled="{x:Bind ViewModel.IsBusy, Mode=OneWay}"
+                Background="{ThemeResource AppSurfaceAltBrush}"
+                Foreground="{ThemeResource AppTextBrush}"
+                Padding="20,10" CornerRadius="6"/>
+      </StackPanel>
+
+      <!-- Progress -->
+      <StackPanel Spacing="6"
+                  Visibility="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+        <ProgressBar Value="{x:Bind ViewModel.Progress, Mode=OneWay}"
+                     Minimum="0" Maximum="100"
+                     Foreground="{ThemeResource AppAccentBrush}"
+                     Background="{ThemeResource AppCardBrush}"/>
+        <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
+                   Foreground="{ThemeResource AppMutedTextBrush}" FontSize="12"/>
+      </StackPanel>
+
+      <!-- Status when done -->
+      <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
+                 Foreground="{ThemeResource AppAccentSoftBrush}"
+                 Visibility="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource InvertBoolToVisibility}}"/>
+
+      <!-- Error -->
+      <Border Background="{ThemeResource AppCardBrush}"
+              BorderBrush="{ThemeResource AppBorderBrush}"
+              BorderThickness="1" CornerRadius="6" Padding="12"
+              Visibility="{x:Bind ViewModel.HasError, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+        <TextBlock Text="{x:Bind ViewModel.LastError, Mode=OneWay}"
+                   Foreground="#FF6B6B"
+                   TextWrapping="Wrap"/>
+      </Border>
+
+    </StackPanel>
+  </ScrollViewer>
+
+  <Page.Resources>
+    <local:BoolToVisibilityConverter        x:Key="BoolToVisibility"       Invert="False"/>
+    <local:BoolToVisibilityConverter        x:Key="InvertBoolToVisibility"  Invert="True"/>
+  </Page.Resources>
+
+</Page>

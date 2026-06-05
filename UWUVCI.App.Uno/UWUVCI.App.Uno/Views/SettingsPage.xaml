@@ -1,0 +1,116 @@
+<Page x:Class="UWUVCI.App.Uno.Views.SettingsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Background="{ThemeResource AppBackgroundBrush}">
+
+  <ScrollViewer Padding="24">
+    <StackPanel Spacing="20" MaxWidth="640">
+
+      <!-- Title -->
+      <TextBlock Text="Settings"
+                 FontSize="24" FontWeight="SemiBold"
+                 Foreground="{ThemeResource AppTextBrush}"/>
+
+      <!-- Out path -->
+      <StackPanel Spacing="6">
+        <TextBlock Text="Output path"
+                   Foreground="{ThemeResource AppMutedTextBrush}" FontSize="12"/>
+        <Grid ColumnSpacing="8">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+          </Grid.ColumnDefinitions>
+          <TextBox Grid.Column="0"
+                   Text="{x:Bind ViewModel.OutPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                   PlaceholderText="Choose output folder…"
+                   Background="{ThemeResource AppCardBrush}"
+                   Foreground="{ThemeResource AppTextBrush}"/>
+          <Button Grid.Column="1" Content="Browse" Click="BrowseOutPath_Click"
+                  Background="{ThemeResource AppSurfaceAltBrush}"
+                  Foreground="{ThemeResource AppTextBrush}"/>
+        </Grid>
+      </StackPanel>
+
+      <!-- Base path -->
+      <StackPanel Spacing="6">
+        <TextBlock Text="Base files path"
+                   Foreground="{ThemeResource AppMutedTextBrush}" FontSize="12"/>
+        <Grid ColumnSpacing="8">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+          </Grid.ColumnDefinitions>
+          <TextBox Grid.Column="0"
+                   Text="{x:Bind ViewModel.BasePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                   PlaceholderText="Base files folder…"
+                   Background="{ThemeResource AppCardBrush}"
+                   Foreground="{ThemeResource AppTextBrush}"/>
+          <Button Grid.Column="1" Content="Browse" Click="BrowseBasePath_Click"
+                  Background="{ThemeResource AppSurfaceAltBrush}"
+                  Foreground="{ThemeResource AppTextBrush}"/>
+        </Grid>
+      </StackPanel>
+
+      <!-- Tools path -->
+      <StackPanel Spacing="6">
+        <TextBlock Text="Tools path"
+                   Foreground="{ThemeResource AppMutedTextBrush}" FontSize="12"/>
+        <Grid ColumnSpacing="8">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+          </Grid.ColumnDefinitions>
+          <TextBox Grid.Column="0"
+                   Text="{x:Bind ViewModel.ToolsPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                   PlaceholderText="Tools folder…"
+                   Background="{ThemeResource AppCardBrush}"
+                   Foreground="{ThemeResource AppTextBrush}"/>
+          <Button Grid.Column="1" Content="Browse" Click="BrowseToolsPath_Click"
+                  Background="{ThemeResource AppSurfaceAltBrush}"
+                  Foreground="{ThemeResource AppTextBrush}"/>
+        </Grid>
+      </StackPanel>
+
+      <!-- Theme -->
+      <StackPanel Spacing="6">
+        <TextBlock Text="Theme"
+                   Foreground="{ThemeResource AppMutedTextBrush}" FontSize="12"/>
+        <ComboBox SelectedItem="{x:Bind ViewModel.Theme, Mode=TwoWay}"
+                  Background="{ThemeResource AppCardBrush}"
+                  Foreground="{ThemeResource AppTextBrush}"
+                  HorizontalAlignment="Left" MinWidth="160">
+          <x:String>Dark</x:String>
+          <x:String>Light</x:String>
+        </ComboBox>
+      </StackPanel>
+
+      <!-- Platform mode -->
+      <StackPanel Spacing="6">
+        <TextBlock Text="Platform mode"
+                   Foreground="{ThemeResource AppMutedTextBrush}" FontSize="12"/>
+        <ComboBox x:Name="PlatformModeBox"
+                  SelectionChanged="PlatformMode_SelectionChanged"
+                  Background="{ThemeResource AppCardBrush}"
+                  Foreground="{ThemeResource AppTextBrush}"
+                  HorizontalAlignment="Left" MinWidth="220">
+          <x:String>Auto (detect)</x:String>
+          <x:String>Force Native Windows</x:String>
+          <x:String>Force Wine / Compatibility</x:String>
+        </ComboBox>
+      </StackPanel>
+
+      <!-- Save -->
+      <Button Content="Save settings"
+              Click="Save_Click"
+              Background="{ThemeResource AppAccentBrush}"
+              Foreground="{ThemeResource AppTextOnAccentBrush}"
+              Padding="16,8" CornerRadius="6"/>
+
+      <!-- Status -->
+      <TextBlock x:Name="SaveStatus"
+                 Foreground="{ThemeResource AppAccentSoftBrush}"
+                 Visibility="Collapsed"/>
+
+    </StackPanel>
+  </ScrollViewer>
+</Page>
