@@ -62,7 +62,8 @@ Target: Uno Desktop first, Windows + Linux/KDE, WASM-ready architecture
 - [x] Phase 8: Packaging and Linux/AppImage path.
 - [x] Phase 9: WASM-readiness audit.
 - [x] Phase 10: Final migration cleanup.
-- [ ] **Phase 11: Injection service implementation** (console-specific logic, MVP-first) — **IN PROGRESS (GCN + Wii done)**
+- [x] **Phase 11: Injection service implementation** (all 8 consoles complete, 113 tests) — **COMPLETE**
+- [x] **Phase 12: InjectOrchestrator + UI wiring** (per-console options, cross-platform picker) — **COMPLETE**
 
 Each phase must end with a build/test status. If a phase cannot build yet by design, the expected failing target must be stated explicitly.
 
@@ -570,22 +571,37 @@ See [CLEANUP.md](CLEANUP.md) for full audit and post-Phase-10 action items.
 - [x] Published Linux build launch tested.
 - [ ] AppImage launch tested only when AppImage target is implemented.
 
-## Phase 11 - Injection Service Implementation
+## Phase 12 - InjectOrchestrator & UI Wiring ✅
+
+**Status: COMPLETE**
+
+Goal: Wire all console services into a single `IInjectPipeline` and expose all options in the Inject page UI.
+
+- [x] `InjectOrchestrator.cs` – dispatches to all 8 console services based on `GameConfig.Console`
+- [x] `UWUVCI.Services` project reference added to `UWUVCI.App.Uno`
+- [x] `App.xaml.cs WireInjectPipeline()` – creates `PlatformInfo → ManifestToolResolver → ProcessToolRunner → InjectOrchestrator`; handles `AppDataPaths` ambiguity via alias
+- [x] `InjectViewModel` expanded with per-console options (Force4by3, PatchVideo, RegionFrii, ToPal, ForceNkitConvert, Passthrough, ControllerIndex, RemapLR, WideScreen, N64DarkFilter, NesPalette, GbaDarkFilter, PokePatch, Debug) + BaseRomPath
+- [x] `InjectPage.xaml` – Base ROM directory picker + console-specific option panels (GCN/Wii/N64/NES/GBA)
+- [x] `InjectPage.xaml.cs` – cross-platform file/folder pickers (`#if WINDOWS` guard for `InitializeWithWindow`)
+- [x] `NesPalettePatcher.AvailablePalettes` public property added
+- [x] 113/113 tests, 0 build errors
+
+## Phase 11 - Injection Service Implementation ✅
 
 Goal: Port console-specific injection logic from legacy project and modernize within V4 architecture.
 
-**Status: IN PROGRESS (11.1 GCN + Wii MVP complete)**
+**Status: COMPLETE**
 
 Supported consoles (from original):
 - [x] **GCN** (GameCube) – `GCNInjectService.InjectAsync` implemented
 - [x] **Wii** – `WiiInjectService.InjectStandardAsync` implemented
-- [ ] **N64** – `N64InjectService` (uses N64Converter, RetroInject, video filter)
-- [ ] **NES** – (legacy `NESInjectService`)
-- [ ] **SNES** – (legacy `SNESInjectService`)
-- [ ] **GBA** – (legacy `GBAInjectService`)
-- [ ] **NDS** – (legacy `NDSInjectService`)
-- [ ] **TurboGrafx** – (legacy `TurboGrafiInjectService`)
-- [ ] **MSX** – (legacy `MSXInjectService`)
+- [x] **N64** – `N64InjectService` (N64Converter, SARC/FLYT arc patcher, INI install)
+- [x] **NES** – `NesSnesInjectService` (wiiurpxtool, retroinject, `NesPalettePatcher`)
+- [x] **SNES** – `NesSnesInjectService` (same service, `IsNes=false`)
+- [x] **GBA** – `GbaInjectService` (Goomba wrap, PokePatch, PSB inject, MArchiveBatchTool)
+- [x] **NDS** – `NdsInjectService` (ZIP ROM replace, DSLayout patch, configuration_cafe.json)
+- [x] **TurboGrafx** – `Tg16InjectService` (BuildPcePkg / BuildTurboCDPcePkg)
+- [x] **MSX** – `MsxInjectService` (header preserve + ROM append)
 
 ### 11.1 – GCN/Wii MVP ✅ **Status: COMPLETE**
 
@@ -609,30 +625,23 @@ Supported consoles (from original):
 - `IPlatformInfo.ToHostPath` used for Wine path fencing
 - `nfs2iso2nfs` still called as external binary (native NfsConverter deferred to 11.5)
 
-### 11.2 – Wii (Second)
+### 11.2 – Wii (Second) ✅
 
-Wii follows GCN pattern but with Nintendont-specific config.
+- [x] `WiiInjectService.InjectStandardAsync` with Nintendont config, video/controller remapping
+- [x] Tests added
 
-- [ ] Port `WiiInjectService` → `WiiInjectStep` implementations
-- [ ] Add Nintendont config handling (video, controller remapping)
-- [ ] Tests for Wii-specific steps
+### 11.3 – N64 (Third) ✅
 
-### 11.3 – N64 (Third)
+- [x] `N64InjectService` – N64Converter, SARC/FLYT arc patcher for widescreen/dark-filter, INI install
+- [x] Tests added
 
-Different tool stack (N64Converter, RetroInject, video filter).
+### 11.4 – Legacy Consoles ✅
 
-- [ ] Port `N64InjectService`
-- [ ] Extract video filter logic (if present)
-- [ ] Tool argument generation for N64-specific commands
-- [ ] Tests
-
-### 11.4 – Legacy Consoles (NES, SNES, GBA, NDS, TurboGrafx, MSX)
-
-Port remaining services.
-
-- [ ] Each console one task per session (focus, small scope)
-- [ ] Extract tool calls + argument generation
-- [ ] Golden-file tests per console
+- [x] NES/SNES – `NesSnesInjectService` (wiiurpxtool + retroinject pipeline, palette patcher)
+- [x] GBA – `GbaInjectService` (Goomba, PokePatch, PSB, MArchiveBatchTool)
+- [x] NDS – `NdsInjectService` (ZIP replace, DSLayout, config JSON)
+- [x] TurboGrafx – `Tg16InjectService`
+- [x] MSX – `MsxInjectService`
 
 ### 11.5 – Native NfsConverter (Deferred)
 

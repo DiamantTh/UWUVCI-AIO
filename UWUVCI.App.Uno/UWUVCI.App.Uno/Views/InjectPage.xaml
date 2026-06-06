@@ -43,7 +43,138 @@
         </Grid>
       </StackPanel>
 
-      <!-- Inject / Cancel -->
+      <!-- Base ROM directory -->
+      <StackPanel Spacing="6">
+        <TextBlock Text="Base ROM directory"
+                   Foreground="{ThemeResource AppMutedTextBrush}" FontSize="12"/>
+        <Grid ColumnSpacing="8">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+          </Grid.ColumnDefinitions>
+          <TextBox Grid.Column="0"
+                   Text="{x:Bind ViewModel.BaseRomPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                   PlaceholderText="Choose extracted base title directory…"
+                   Background="{ThemeResource AppCardBrush}"
+                   Foreground="{ThemeResource AppTextBrush}"/>
+          <Button Grid.Column="1" Content="Browse" Click="BrowseBaseRom_Click"
+                  Background="{ThemeResource AppSurfaceAltBrush}"
+                  Foreground="{ThemeResource AppTextBrush}"/>
+        </Grid>
+      </StackPanel>
+
+      <!-- GCN options -->
+      <Border Background="{ThemeResource AppCardBrush}"
+              BorderBrush="{ThemeResource AppBorderBrush}"
+              BorderThickness="1" CornerRadius="6" Padding="12"
+              Visibility="{x:Bind ViewModel.IsGcnSelected, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+        <StackPanel Spacing="8">
+          <TextBlock Text="GameCube options"
+                     Foreground="{ThemeResource AppMutedTextBrush}" FontSize="12"/>
+          <CheckBox Content="Force 4:3 aspect ratio"
+                    IsChecked="{x:Bind ViewModel.Force4by3, Mode=TwoWay}"
+                    Foreground="{ThemeResource AppTextBrush}"/>
+        </StackPanel>
+      </Border>
+
+      <!-- Wii options -->
+      <Border Background="{ThemeResource AppCardBrush}"
+              BorderBrush="{ThemeResource AppBorderBrush}"
+              BorderThickness="1" CornerRadius="6" Padding="12"
+              Visibility="{x:Bind ViewModel.IsWiiSelected, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+        <StackPanel Spacing="8">
+          <TextBlock Text="Wii options"
+                     Foreground="{ThemeResource AppMutedTextBrush}" FontSize="12"/>
+          <CheckBox Content="Patch video (PAL fix)"
+                    IsChecked="{x:Bind ViewModel.PatchVideo, Mode=TwoWay}"
+                    Foreground="{ThemeResource AppTextBrush}"/>
+          <CheckBox Content="RegionFrii patch"
+                    IsChecked="{x:Bind ViewModel.RegionFrii, Mode=TwoWay}"
+                    Foreground="{ThemeResource AppTextBrush}"/>
+          <CheckBox Content="Convert to PAL"
+                    IsChecked="{x:Bind ViewModel.ToPal, Mode=TwoWay}"
+                    Foreground="{ThemeResource AppTextBrush}"/>
+          <CheckBox Content="Force NKit conversion"
+                    IsChecked="{x:Bind ViewModel.ForceNkitConvert, Mode=TwoWay}"
+                    Foreground="{ThemeResource AppTextBrush}"/>
+          <CheckBox Content="Passthrough (skip repack)"
+                    IsChecked="{x:Bind ViewModel.Passthrough, Mode=TwoWay}"
+                    Foreground="{ThemeResource AppTextBrush}"/>
+          <CheckBox Content="Remap L+R → ZL+ZR"
+                    IsChecked="{x:Bind ViewModel.RemapLR, Mode=TwoWay}"
+                    Foreground="{ThemeResource AppTextBrush}"/>
+          <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+            <TextBlock Text="Controller index:"
+                       VerticalAlignment="Center"
+                       Foreground="{ThemeResource AppTextBrush}"/>
+            <ComboBox ItemsSource="{x:Bind ViewModel.AvailableControllerIndices}"
+                      SelectedIndex="{x:Bind ViewModel.ControllerIndex, Mode=TwoWay}"
+                      Background="{ThemeResource AppCardBrush}"
+                      Foreground="{ThemeResource AppTextBrush}"
+                      MinWidth="80"/>
+          </StackPanel>
+        </StackPanel>
+      </Border>
+
+      <!-- N64 options -->
+      <Border Background="{ThemeResource AppCardBrush}"
+              BorderBrush="{ThemeResource AppBorderBrush}"
+              BorderThickness="1" CornerRadius="6" Padding="12"
+              Visibility="{x:Bind ViewModel.IsN64Selected, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+        <StackPanel Spacing="8">
+          <TextBlock Text="N64 options"
+                     Foreground="{ThemeResource AppMutedTextBrush}" FontSize="12"/>
+          <CheckBox Content="Widescreen (16:9)"
+                    IsChecked="{x:Bind ViewModel.WideScreen, Mode=TwoWay}"
+                    Foreground="{ThemeResource AppTextBrush}"/>
+          <CheckBox Content="Remove dark filter"
+                    IsChecked="{x:Bind ViewModel.N64DarkFilter, Mode=TwoWay}"
+                    Foreground="{ThemeResource AppTextBrush}"/>
+        </StackPanel>
+      </Border>
+
+      <!-- NES options -->
+      <Border Background="{ThemeResource AppCardBrush}"
+              BorderBrush="{ThemeResource AppBorderBrush}"
+              BorderThickness="1" CornerRadius="6" Padding="12"
+              Visibility="{x:Bind ViewModel.IsNesSelected, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+        <StackPanel Spacing="8">
+          <TextBlock Text="NES options"
+                     Foreground="{ThemeResource AppMutedTextBrush}" FontSize="12"/>
+          <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+            <TextBlock Text="Palette:"
+                       VerticalAlignment="Center"
+                       Foreground="{ThemeResource AppTextBrush}"/>
+            <ComboBox ItemsSource="{x:Bind ViewModel.AvailableNesPalettes}"
+                      SelectedItem="{x:Bind ViewModel.NesPalette, Mode=TwoWay}"
+                      Background="{ThemeResource AppCardBrush}"
+                      Foreground="{ThemeResource AppTextBrush}"
+                      MinWidth="240"/>
+          </StackPanel>
+        </StackPanel>
+      </Border>
+
+      <!-- GBA options -->
+      <Border Background="{ThemeResource AppCardBrush}"
+              BorderBrush="{ThemeResource AppBorderBrush}"
+              BorderThickness="1" CornerRadius="6" Padding="12"
+              Visibility="{x:Bind ViewModel.IsGbaSelected, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+        <StackPanel Spacing="8">
+          <TextBlock Text="GBA options"
+                     Foreground="{ThemeResource AppMutedTextBrush}" FontSize="12"/>
+          <CheckBox Content="Remove dark filter"
+                    IsChecked="{x:Bind ViewModel.GbaDarkFilter, Mode=TwoWay}"
+                    Foreground="{ThemeResource AppTextBrush}"/>
+          <CheckBox Content="Poke Patch"
+                    IsChecked="{x:Bind ViewModel.PokePatch, Mode=TwoWay}"
+                    Foreground="{ThemeResource AppTextBrush}"/>
+        </StackPanel>
+      </Border>
+
+      <!-- Common options -->
+      <CheckBox Content="Debug output"
+                IsChecked="{x:Bind ViewModel.Debug, Mode=TwoWay}"
+                Foreground="{ThemeResource AppTextBrush}"/>
       <StackPanel Orientation="Horizontal" Spacing="12">
         <Button Content="Inject"
                 Click="Inject_Click"

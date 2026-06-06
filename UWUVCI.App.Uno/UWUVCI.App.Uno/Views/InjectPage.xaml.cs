@@ -31,10 +31,32 @@ public sealed partial class InjectPage : Page
         {
             var picker = new Windows.Storage.Pickers.FileOpenPicker();
             picker.FileTypeFilter.Add("*");
-            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.MainWindow);
-            WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
+#if WINDOWS
+            WinRT.Interop.InitializeWithWindow.Initialize(
+                picker, WinRT.Interop.WindowNative.GetWindowHandle(App.MainWindow));
+#endif
             var file = await picker.PickSingleFileAsync();
             if (file is not null) ViewModel.RomPath = file.Path;
+        }
+        catch { /* picker unavailable on this platform */ }
+    }
+
+    private async void BrowseBaseRom_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var picker = new Windows.Storage.Pickers.FolderPicker();
+            picker.FileTypeFilter.Add("*");
+#if WINDOWS
+            WinRT.Interop.InitializeWithWindow.Initialize(
+                picker, WinRT.Interop.WindowNative.GetWindowHandle(App.MainWindow));
+#endif
+            var folder = await picker.PickSingleFolderAsync();
+            if (folder is not null)
+            {
+                ViewModel.BaseRomPath    = folder.Path;
+                ViewModel.IsCustomBaseRom = true;
+            }
         }
         catch { /* picker unavailable on this platform */ }
     }

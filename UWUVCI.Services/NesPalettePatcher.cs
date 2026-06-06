@@ -32,6 +32,10 @@ namespace UWUVCI.Services
             ["MM Legacy 3DS Modern"] = HexToBytes("B5 AD 80 B1 84 35 9C 15 B0 10 B4 05 B4 00 A8 60 94 C0 85 00 81 20 80 E4 80 CB 80 00 88 42 88 42 DE F7 85 5A 94 BF B8 BF D4 7A E0 90 DC C4 D1 40 B9 C0 92 20 8A 60 82 48 82 14 88 42 88 42 88 42 FF FF B6 FF CE 7F E2 5F F1 DF FD 9A FE 2E FE C6 F3 40 D3 84 B3 A6 9B B2 B6 FF B5 AD 88 42 88 42 FF FF E7 9F EF 7F F7 5F FF 3F FF 5E FF 9B FB 97 FB B6 F7 F7 EB F8 DF DA E3 DF DE F7 88 42 88 42")
         };
 
+        /// <summary>All palette names available for selection, including the default no-op entry.</summary>
+        public static IReadOnlyList<string> AvailablePalettes { get; } =
+            new[] { "Default (Base RPX)" }.Concat(PaletteMap.Keys).ToArray();
+
         public static void Apply(string rpxPath, string paletteName, string defaultPaletteName = "Default (Base RPX)")
         {
             if (string.IsNullOrWhiteSpace(rpxPath) || string.IsNullOrWhiteSpace(paletteName))
