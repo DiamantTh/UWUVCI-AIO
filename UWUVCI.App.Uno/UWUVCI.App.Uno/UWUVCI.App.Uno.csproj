@@ -6,6 +6,9 @@
     <ProjectReference Include="..\..\UWUVCI.Config\UWUVCI.Config.csproj" />
     <ProjectReference Include="..\..\UWUVCI.Services\UWUVCI.Services.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\tools.toml" />
+  </ItemGroup>
   <PropertyGroup>
     <TargetFrameworks>net10.0-windows10.0.26100;net10.0-desktop</TargetFrameworks>
 

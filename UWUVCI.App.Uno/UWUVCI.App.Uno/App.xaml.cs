@@ -1,8 +1,10 @@
 using System;
+using System.Reflection;
 using Microsoft.Extensions.Logging;
 using Uno.Resizetizer;
 using UWUVCI.App.Uno.ViewModels;
 using UWUVCI.App.Uno.Views;
+using UWUVCI.Config.Loaders;
 using UWUVCI.Config.Models;
 using UWUVCI.Services;
 using UWUVCI.Tooling;
@@ -20,6 +22,7 @@ public partial class App : Application
     internal static ShellViewModel   Shell    { get; } = new();
     internal static SettingsViewModel Settings { get; } = new(ResolveSettingsPath());
     internal static InjectViewModel   Inject   { get; } = new();
+    internal static ToolsViewModel    Tools    { get; } = new();
 
     // ---- theme state -------------------------------------------------------
 
@@ -58,29 +61,48 @@ public partial class App : Application
 
         // Wire up the inject pipeline so InjectViewModel can actually run
         WireInjectPipeline();
+
+        // Initialise the tools view model with the manifest
+        Tools.Initialise(LoadManifest(), ResolveToolsDir(), new PlatformInfo(Settings.NativeWindows));
+    }
+
+    internal static string ResolveToolsDir()
+        => Settings.ToolsPath is { Length: > 0 } tp ? tp : AppPaths.ToolsDir;
+
+    internal static ToolManifestModel LoadManifest()
+    {
+        var toolsDir = ResolveToolsDir();
+
+        // 1. User-placed tools.toml in the tools directory takes precedence
+        var userToml = System.IO.Path.Combine(toolsDir, "tools.toml");
+        if (System.IO.File.Exists(userToml))
+        {
+            try { return ToolManifestLoader.LoadFromFile(userToml); } catch { /* fall through */ }
+        }
+
+        // 2. Fall back to the bundled embedded tools.toml
+        try
+        {
+            var asm  = Assembly.GetExecutingAssembly();
+            var name = asm.GetManifestResourceNames()
+                          .FirstOrDefault(n => n.EndsWith("tools.toml", StringComparison.OrdinalIgnoreCase));
+            if (name is not null)
+            {
+                using var stream = asm.GetManifestResourceStream(name)!;
+                using var reader = new System.IO.StreamReader(stream);
+                return ToolManifestLoader.LoadFromString(reader.ReadToEnd());
+            }
+        }
+        catch { /* best effort */ }
+
+        return new ToolManifestModel();
     }
 
     private static void WireInjectPipeline()
     {
         var platform  = new PlatformInfo(Settings.NativeWindows);
-        var toolsDir  = Settings.ToolsPath is { Length: > 0 } tp
-            ? tp
-            : AppPaths.ToolsDir;
-
-        // Load tool manifest from tools directory; fall back to empty manifest
-        ToolManifestModel manifest;
-        try
-        {
-            var manifestPath = System.IO.Path.Combine(toolsDir, "tools.json");
-            manifest = System.IO.File.Exists(manifestPath)
-                ? System.Text.Json.JsonSerializer.Deserialize<ToolManifestModel>(
-                    System.IO.File.ReadAllText(manifestPath))!
-                : new ToolManifestModel();
-        }
-        catch
-        {
-            manifest = new ToolManifestModel();
-        }
+        var toolsDir  = ResolveToolsDir();
+        var manifest  = LoadManifest();
 
         var resolver     = new ManifestToolResolver(manifest, toolsDir, platform);
         var runner       = new ProcessToolRunner(resolver, platform);

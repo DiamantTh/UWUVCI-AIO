@@ -1,0 +1,60 @@
+# UWUVCI Tool Manifest
+# Place tool binaries in the configured tools directory.
+# download_url and sha256 are used by the built-in downloader on the Tools page.
+# Set windows_only = true for tools that only have a Windows .exe and must run via Wine on Linux.
+
+[[tools]]
+name            = "wit"
+windows_file    = "wit.exe"
+linux_file      = "wit"
+windows_only    = false
+sha256          = ""
+download_url    = ""
+
+[[tools]]
+name            = "nfs2iso2nfs"
+windows_file    = "nfs2iso2nfs.exe"
+linux_file      = "nfs2iso2nfs"
+windows_only    = false
+sha256          = ""
+download_url    = ""
+
+[[tools]]
+name            = "N64Converter"
+windows_file    = "N64Converter.exe"
+linux_file      = ""
+windows_only    = true
+sha256          = ""
+download_url    = ""
+
+[[tools]]
+name            = "retroinject"
+windows_file    = "retroinject.exe"
+linux_file      = ""
+windows_only    = true
+sha256          = ""
+download_url    = ""
+
+[[tools]]
+name            = "wiiurpxtool"
+windows_file    = "wiiurpxtool.exe"
+linux_file      = "wiiurpxtool"
+windows_only    = false
+sha256          = ""
+download_url    = ""
+
+[[tools]]
+name            = "cnuspacker"
+windows_file    = "CNUSPacker.exe"
+linux_file      = ""
+windows_only    = true
+sha256          = ""
+download_url    = ""
+
+[[tools]]
+name            = "MArchiveBatchTool"
+windows_file    = "MArchiveBatchTool.exe"
+linux_file      = ""
+windows_only    = true
+sha256          = ""
+download_url    = ""
