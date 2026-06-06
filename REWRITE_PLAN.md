@@ -1160,26 +1160,13 @@ wine_allowed = true
 ✅ **CLOSED:** TGA via SkiaSharp → **Phase 5 COMPLETE**
 ✅ **CLOSED:** No GitHub write features → **Removed from V4.0 scope**
 ✅ **CLOSED:** AppImage optional → **Deferred; tar.gz + ZIP only for V4.0**
-
-## Open Decisions — Phase 14 MUST Resolve
-
-**Q1: Base ROM download infrastructure?**
-- Option A: HTTP pull from https://github.com/DiamantTh/UWUVCI-Bases (public repo)
-- Option B: Manual user download + import UI
-- **Recommendation:** Option A (BaseDownloadService similar to ToolDownloadService)
-- **Decision needed:** Where to host base ROMs? GitHub repo? File server?
-
-**Q2: Multi-OS external tool support?**
-- For N64Converter, RetroInject (Windows-only): Wine on Linux, or skip on Linux?
-- **Recommendation:** Wine wrapper + disable on Linux if Wine absent
-- **Decision needed:** Accept Wine dependency for Linux users?
-
-**Q3: Release tagging + versioning?**
-- Current: manual git tags (user's responsibility)
-- **Recommendation:** Embed VERSION in code, auto-tag in publish script
-- **Decision needed:** Version scheme (e.g., 4.0.0-alpha.1, 4.0.0-rc1, 4.0.0)?
-
-**Q4: Documentation + user guide?**
-- README exists; needs update for V4 UI and tools
-- **Recommendation:** 1 session for README + basic user guide
-- **Decision needed:** Markdown in repo or wiki?
+✅ **CLOSED Q1:** Base ROM download → `BaseDownloadService` implemented (Phase 15).
+  URLs/SHA256 not hardcoded — caller provides from config or user input.
+  User places base ZIPs manually in BasesDir; `BaseExtractor` extracts on first use.
+✅ **CLOSED Q2:** Windows-only tools on Linux → disabled if Wine absent, no Wine forced.
+  `ProcessToolRunner` falls back to `wine <exe>` if tool is a `.exe` on Linux;
+  if `wine` is not installed the injection fails with a clear error message.
+✅ **CLOSED Q3:** Version scheme → **4.0.0** embedded in `ApplicationDisplayVersion`.
+  `git tag v4.0.0` applied locally. Push tag when ready for public release.
+✅ **CLOSED Q4:** Documentation → README updated with V4.0.0 build/run/publish instructions.
+  No separate wiki; all user-relevant notes in README.md.
