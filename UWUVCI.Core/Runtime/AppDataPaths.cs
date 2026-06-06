@@ -35,6 +35,9 @@ public static class AppDataPaths
     /// <summary>Rolling log file.</summary>
     public static string LogFile      => Path.Combine(Ensure(Path.Combine(RootDir, "Logs")), "uwuvci.log");
 
+    /// <summary>Cached BASE extractions keyed by archive hash.</summary>
+    public static string CacheDir    => Ensure(Path.Combine(RootDir, "Cache"));
+
     // ---- helpers -----------------------------------------------------------
 
     private static string ResolveRoot()

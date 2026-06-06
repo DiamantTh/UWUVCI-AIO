@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>UWUVCI.Tests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../UWUVCI.Core/UWUVCI.Core.csproj" />
+    <ProjectReference Include="../UWUVCI.Config/UWUVCI.Config.csproj" />
+    <ProjectReference Include="../UWUVCI.Tooling/UWUVCI.Tooling.csproj" />
+    <ProjectReference Include="../UWUVCI.ImagePipeline/UWUVCI.ImagePipeline.csproj" />
+  </ItemGroup>
+</Project>

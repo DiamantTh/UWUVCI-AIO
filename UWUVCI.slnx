@@ -5,6 +5,7 @@
   <Project Path="UWUVCI.Config/UWUVCI.Config.csproj" />
   <Project Path="UWUVCI.Core/UWUVCI.Core.csproj" />
   <Project Path="UWUVCI.ImagePipeline/UWUVCI.ImagePipeline.csproj" />
+  <Project Path="UWUVCI.Services/UWUVCI.Services.csproj" />
   <Project Path="UWUVCI.Tests/UWUVCI.Tests.csproj" />
   <Project Path="UWUVCI.Tooling/UWUVCI.Tooling.csproj" />
 </Solution>

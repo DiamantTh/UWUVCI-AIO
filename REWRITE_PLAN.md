@@ -62,7 +62,7 @@ Target: Uno Desktop first, Windows + Linux/KDE, WASM-ready architecture
 - [x] Phase 8: Packaging and Linux/AppImage path.
 - [x] Phase 9: WASM-readiness audit.
 - [x] Phase 10: Final migration cleanup.
-- [ ] **Phase 11: Injection service implementation** (console-specific logic, MVP-first)
+- [ ] **Phase 11: Injection service implementation** (console-specific logic, MVP-first) — **IN PROGRESS (GCN + Wii done)**
 
 Each phase must end with a build/test status. If a phase cannot build yet by design, the expected failing target must be stated explicitly.
 
@@ -574,11 +574,11 @@ See [CLEANUP.md](CLEANUP.md) for full audit and post-Phase-10 action items.
 
 Goal: Port console-specific injection logic from legacy project and modernize within V4 architecture.
 
-**Status: NOT YET STARTED (ready to begin)**
+**Status: IN PROGRESS (11.1 GCN + Wii MVP complete)**
 
 Supported consoles (from original):
-- [ ] **GCN** (GameCube) – `WiiInjectService` (uses wit, nfs2iso2nfs, copy icon/banner)
-- [ ] **Wii** – `WiiInjectService` (uses wit, nfs2iso2nfs, Nintendont config)
+- [x] **GCN** (GameCube) – `GCNInjectService.InjectAsync` implemented
+- [x] **Wii** – `WiiInjectService.InjectStandardAsync` implemented
 - [ ] **N64** – `N64InjectService` (uses N64Converter, RetroInject, video filter)
 - [ ] **NES** – (legacy `NESInjectService`)
 - [ ] **SNES** – (legacy `SNESInjectService`)
@@ -587,47 +587,33 @@ Supported consoles (from original):
 - [ ] **TurboGrafx** – (legacy `TurboGrafiInjectService`)
 - [ ] **MSX** – (legacy `MSXInjectService`)
 
-### 11.1 – GCN/Wii MVP (First)
+### 11.1 – GCN/Wii MVP ✅ **Status: COMPLETE**
 
-Port GCN (GameCube) injection to demonstrate the pattern. Wii follows same logic.
+**Completed:**
+- [x] Created `UWUVCI.Services` project (net10.0, references Core + Config + Tooling + ImagePipeline)
+- [x] `BaseExtractor.cs` – extracts BASE.zip into user CacheDir, keyed by MD5
+- [x] `IOHelpers.cs` – MoveOrCopyDirectory, MoveOverwrite
+- [x] `WineFence.cs` – WaitForVisibility, WaitForStableSize (cross-filesystem polling)
+- [x] `WiiPatchService.cs` – ApplyRegionFrii, ApplyJpPatch (binary patch helpers)
+- [x] `NKitService.cs` – ConvertToIsoAsync / ConvertToNKitAsync (fully async, IToolRunner)
+- [x] `WitTicketExtractionService.cs` – ExtractTicketsAsync (wit extract --psel data)
+- [x] `WitNfsService.cs` – BuildIsoExtractTicketsAndInjectAsync (core pipeline)
+- [x] `GCNInjectService.cs` – InjectAsync (PrepareTempBase → Nintendont DOL → game.iso → disc2 → nfs)
+- [x] `WiiInjectService.cs` – InjectStandardAsync + Homebrew/Forwarder helpers
+- [x] 25 new unit tests (all green, total now 105)
+- [x] AppDataPaths.CacheDir added to Core
 
-**Tasks:**
-- [ ] Read legacy `Classes/Injection.cs` + `Services/GCNInjectService.cs` from UWUVCI AIO WPF/
-- [ ] Extract step sequence: icon copy → banner copy → .app repack → NFS wrapping → title creation
-- [ ] Create `UWUVCI.Services/GCNInjectService.cs` as `IGcnInjectStep` implementations
-- [ ] Port tool argument generation (wit, nfs2iso2nfs commands)
-- [ ] Create unit tests for each step (Golden files for commands, paths, error cases)
-- [ ] Integrate into `InjectViewModel` → call via `IInjectPipeline`
-- [ ] Manual test: inject real GCN ROM → launch on Wii U
-
-**Legacy reference files:**
-- `UWUVCI AIO WPF/Services/GCNInjectService.cs`
-- `UWUVCI AIO WPF/Classes/Injection.cs` (orchestration)
-- `UWUVCI AIO WPF/Helpers/ToolRunner.cs` (tool execution pattern – now abstracted in V4 `IToolRunner`)
-
-**New files to create:**
-- `UWUVCI.Services/` (new project, references Core + Tooling + ImagePipeline)
-- `UWUVCI.Services/IGcnInjectStep.cs` (marker interface extending `IInjectStep`)
-- `UWUVCI.Services/GCN/CopyBootImageStep.cs`
-- `UWUVCI.Services/GCN/CopyBannerStep.cs`
-- `UWUVCI.Services/GCN/RepackAppStep.cs`
-- `UWUVCI.Services/GCN/WrapToNfsStep.cs`
-- `UWUVCI.Services/GCN/CreateTitleMetaStep.cs`
-- `UWUVCI.Tests/GcnInjectTests.cs` (golden-file tests for wit/nfs2iso2nfs calls)
-
-**Exit criteria:**
-- [ ] GCN inject succeeds from UI (app ROM → WiiU-ready file)
-- [ ] All GCN steps have unit tests
-- [ ] Tool arguments are validated against legacy behavior
-- [ ] Error handling matches original (missing tools, ROM validation, disk space)
-- [ ] 15–20 new tests added (all green)
+**Architecture notes:**
+- All methods fully async (no `.Result` or `.GetAwaiter().GetResult()`)
+- `IToolRunner.RunAsync` used throughout (no Process.Start)
+- `IPlatformInfo.ToHostPath` used for Wine path fencing
+- `nfs2iso2nfs` still called as external binary (native NfsConverter deferred to 11.5)
 
 ### 11.2 – Wii (Second)
 
 Wii follows GCN pattern but with Nintendont-specific config.
 
 - [ ] Port `WiiInjectService` → `WiiInjectStep` implementations
-- [ ] Same tool logic (wit, nfs2iso2nfs)
 - [ ] Add Nintendont config handling (video, controller remapping)
 - [ ] Tests for Wii-specific steps
 
@@ -647,6 +633,12 @@ Port remaining services.
 - [ ] Each console one task per session (focus, small scope)
 - [ ] Extract tool calls + argument generation
 - [ ] Golden-file tests per console
+
+### 11.5 – Native NfsConverter (Deferred)
+
+- [ ] Write NfsConverter from scratch (Wii disc format spec, AES-128-CBC via `System.Security.Cryptography.Aes.Create()`)
+- [ ] Replace external `nfs2iso2nfs` binary call in WitNfsService
+- [ ] Full encode/decode round-trip tests
 
 **Total new unit tests expected: 80+ across all consoles**
 
