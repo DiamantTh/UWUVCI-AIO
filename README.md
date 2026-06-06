@@ -1,4 +1,4 @@
-# UWUVCI-AIO-WPF (Fork of Fork) – V4 Redesign
+# UWUVCI-AIO-WPF (Fork of Fork) – V4.0.0 Redesign
 
 > **Disclaimer:**
 > This is **not** the official version of [UWUVCI-AIO-WPF](https://github.com/stuff-by-3-random-dudes/UWUVCI-AIO-WPF).
@@ -10,20 +10,59 @@
 
 ---
 
-## About V4 Redesign
+## About V4.0.0 Release
 
 **UWUVCI-V3** was built on WPF (.NET Framework 4.8), which had significant limitations:
 - ❌ **Windows-only** – No Linux/macOS support despite user demand
 - ❌ **Limited scalability** – Legacy architecture made cross-platform porting impractical
 - ❌ **Outdated tech stack** – WPF reached end-of-life for modern development
 
-**V4 redesigns the entire codebase** using modern .NET 10 + Uno Platform:
+**V4.0.0 redesigns the entire codebase** using modern .NET 10 LTS + Uno Platform:
 - ✅ **Cross-platform** – Windows, Linux/KDE, macOS support (WASM ready for future web version)
 - ✅ **Clean architecture** – Testable services, minimal coupling, interface-based design
 - ✅ **Modern tech** – Tomlyn for config, SkiaSharp for images, MSTest v3 for testing
-- ✅ **Production-ready** – 80+ tests, self-contained portable builds, no external deps
+- ✅ **Production-ready** – 118 tests (all green), self-contained portable builds, no external deps
 
 This is a **from-scratch redesign**, not a port. The old WPF code is kept as a reference only.
+
+---
+
+## Build & Run (V4.0.0)
+
+### Prerequisites
+- **.NET 10 SDK** (https://dotnet.microsoft.com/download)
+- **Linux users:** `libc6-dev`, `libx11-dev` (Uno Platform desktop requirements)
+
+### Build
+```bash
+cd UWUVCI-AIO-WPF
+dotnet build
+```
+
+### Run
+```bash
+# Windows
+dotnet run --project UWUVCI.App.Uno/UWUVCI.App.Uno/UWUVCI.App.Uno.csproj
+
+# Linux
+dotnet run --project UWUVCI.App.Uno/UWUVCI.App.Uno/UWUVCI.App.Uno.csproj
+```
+
+### Test (118 tests)
+```bash
+dotnet test
+```
+
+### Publish (Self-Contained)
+```bash
+# Windows (win-x64)
+dotnet publish UWUVCI.App.Uno/UWUVCI.App.Uno/UWUVCI.App.Uno.csproj \
+  -c Release -r win-x64 -f net10.0-desktop -o dist/windows
+
+# Linux (linux-x64)
+dotnet publish UWUVCI.App.Uno/UWUVCI.App.Uno/UWUVCI.App.Uno.csproj \
+  -c Release -r linux-x64 -f net10.0-desktop -o dist/linux
+```
 
 ---
 

@@ -20,8 +20,8 @@
     <!-- App Identifier -->
     <ApplicationId>com.companyname.uwuvci-app-uno</ApplicationId>
     <!-- Versions -->
-    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
-    <ApplicationVersion>1</ApplicationVersion>
+    <ApplicationDisplayVersion>4.0.0</ApplicationDisplayVersion>
+    <ApplicationVersion>400</ApplicationVersion>
     <!-- Package Publisher -->
     <ApplicationPublisher>UWUVCI.App.Uno</ApplicationPublisher>
     <!-- Package Description -->
