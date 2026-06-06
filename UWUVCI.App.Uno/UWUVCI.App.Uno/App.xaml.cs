@@ -4,6 +4,9 @@ using Uno.Resizetizer;
 using UWUVCI.App.Uno.ViewModels;
 using UWUVCI.App.Uno.Views;
 using UWUVCI.Config.Models;
+using UWUVCI.Services;
+using UWUVCI.Tooling;
+using AppPaths = UWUVCI.Core.Runtime.AppDataPaths;
 
 namespace UWUVCI.App.Uno;
 
@@ -52,6 +55,44 @@ public partial class App : Application
 
         // Subscribe to live settings changes
         SettingsViewModel.SettingsSaved += OnSettingsSaved;
+
+        // Wire up the inject pipeline so InjectViewModel can actually run
+        WireInjectPipeline();
+    }
+
+    private static void WireInjectPipeline()
+    {
+        var platform  = new PlatformInfo(Settings.NativeWindows);
+        var toolsDir  = Settings.ToolsPath is { Length: > 0 } tp
+            ? tp
+            : AppPaths.ToolsDir;
+
+        // Load tool manifest from tools directory; fall back to empty manifest
+        ToolManifestModel manifest;
+        try
+        {
+            var manifestPath = System.IO.Path.Combine(toolsDir, "tools.json");
+            manifest = System.IO.File.Exists(manifestPath)
+                ? System.Text.Json.JsonSerializer.Deserialize<ToolManifestModel>(
+                    System.IO.File.ReadAllText(manifestPath))!
+                : new ToolManifestModel();
+        }
+        catch
+        {
+            manifest = new ToolManifestModel();
+        }
+
+        var resolver     = new ManifestToolResolver(manifest, toolsDir, platform);
+        var runner       = new ProcessToolRunner(resolver, platform);
+        var orchestrator = new InjectOrchestrator(runner, platform);
+
+        Inject.InjectPipelineFactory = () => orchestrator;
+        Inject.ToolsPathProvider     = () => toolsDir;
+        Inject.TempPathProvider      = () => AppPaths.TempDir;
+        Inject.OutPathProvider       = () =>
+            Settings.OutPath is { Length: > 0 } op
+                ? op
+                : AppPaths.OutputDir;
     }
 
     private void OnSettingsSaved(AppSettingsModel model)
@@ -97,7 +138,7 @@ public partial class App : Application
 
     // ---- helpers -----------------------------------------------------------
 
-    private static string ResolveSettingsPath() => UWUVCI.Core.Runtime.AppDataPaths.SettingsFile;
+    private static string ResolveSettingsPath() => AppPaths.SettingsFile;
 
     public static void InitializeLogging()
     {
