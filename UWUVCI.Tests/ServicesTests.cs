@@ -770,60 +770,145 @@ public class NdsInjectServiceTests
 [TestCategory("Services")]
 public class NesSnesInjectServiceTests
 {
+    // ---- RPX fixture builder -----------------------------------------------
+    // Creates a minimal valid RPX (ELF type 0xFE01, big-endian PowerPC).
+    // The payload is embedded in a SHT_PROGBITS data section (not zlib-compressed).
+    // WiiURpxService can decompress / compress this file without modification.
+    private static byte[] BuildMinimalRpx(byte[] payload)
+    {
+        const int shentsize   = 40;
+        const int shnum       = 4;          // null(0) + crcs(1) + fileinfo(2) + data(3)
+        const int shoff       = 64;         // section header table right after ELF header
+        const int sectionAlign = 0x40;
+
+        static int AlignUp(int v, int a) => (v + a - 1) & ~(a - 1);
+
+        int shdrDataStart  = shoff + shnum * shentsize; // 64 + 160 = 224
+
+        int crcOff  = shdrDataStart;        // 224
+        int crcSize = shnum * 4;            // 16 bytes (4 × uint32)
+
+        int fiOff  = AlignUp(crcOff  + crcSize,   sectionAlign); // 256
+        int fiSize = 32;
+
+        int dataOff  = AlignUp(fiOff + fiSize, sectionAlign);   // 320
+        int dataSize = payload.Length;
+
+        int totalSize = AlignUp(dataOff + dataSize, sectionAlign);
+        var buf = new byte[totalSize];
+
+        // ---- ELF header (bytes 0–63) ----------------------------------------
+        buf[0]=0x7F; buf[1]=0x45; buf[2]=0x4C; buf[3]=0x46; // magic
+        buf[4]=1;    // ELFCLASS32
+        buf[5]=2;    // ELFDATA2MSB
+        buf[6]=1;    // version
+        buf[16]=0xFE; buf[17]=0x01;  // e_type = RPX
+        buf[18]=0x00; buf[19]=0x14;  // e_machine = PowerPC
+        BEW32(buf, 20, 1);           // e_version
+        BEW32(buf, 32, (uint)shoff); // e_shoff
+        BEW16(buf, 40, 64);          // e_ehsize
+        BEW16(buf, 46, shentsize);   // e_shentsize
+        BEW16(buf, 48, shnum);       // e_shnum
+
+        // ---- Section 1: CRC section -----------------------------------------
+        int s1 = shoff + 1 * shentsize;
+        BEW32(buf, s1 +  4, 0x80000003u);   // sh_type = SHT_RPL_CRCS
+        BEW32(buf, s1 + 16, (uint)crcOff);
+        BEW32(buf, s1 + 20, (uint)crcSize);
+
+        // ---- Section 2: FILEINFO section ------------------------------------
+        int s2 = shoff + 2 * shentsize;
+        BEW32(buf, s2 +  4, 0x80000004u);   // sh_type = SHT_RPL_FILEINFO
+        BEW32(buf, s2 + 16, (uint)fiOff);
+        BEW32(buf, s2 + 20, (uint)fiSize);
+
+        // ---- Section 3: DATA section ----------------------------------------
+        int s3 = shoff + 3 * shentsize;
+        BEW32(buf, s3 +  4, 0x00000001u);   // sh_type = SHT_PROGBITS
+        BEW32(buf, s3 +  8, 0x00000006u);   // sh_flags = SHF_ALLOC | SHF_EXECINSTR
+        BEW32(buf, s3 + 16, (uint)dataOff);
+        BEW32(buf, s3 + 20, (uint)dataSize);
+
+        // ---- Payload --------------------------------------------------------
+        Array.Copy(payload, 0, buf, dataOff, payload.Length);
+
+        // ---- CRCs (CRC section CRC is always 0 by convention) ---------------
+        BEW32(buf, crcOff + 0,  0);
+        BEW32(buf, crcOff + 4,  0);
+        BEW32(buf, crcOff + 8,  Crc32(buf, fiOff,   fiSize));
+        BEW32(buf, crcOff + 12, Crc32(buf, dataOff, dataSize));
+
+        return buf;
+    }
+
+    private static void BEW32(byte[] d, int o, uint v)
+    {
+        d[o]=   (byte)(v>>24); d[o+1]=(byte)(v>>16);
+        d[o+2]= (byte)(v>> 8); d[o+3]=(byte)v;
+    }
+    private static void BEW16(byte[] d, int o, int v) { d[o]=(byte)(v>>8); d[o+1]=(byte)v; }
+
+    private static uint Crc32(byte[] d, int off, int len)
+    {
+        uint crc = ~0u;
+        for (int i = 0; i < len; i++)
+            crc = (crc >> 8) ^ Crc32Tab[(crc ^ d[off + i]) & 0xFF];
+        return ~crc;
+    }
+    private static readonly uint[] Crc32Tab = BuildCrc32Tab();
+    private static uint[] BuildCrc32Tab()
+    {
+        var t = new uint[256];
+        for (uint i = 0; i < 256; i++)
+        {
+            uint c = i;
+            for (int j = 0; j < 8; j++) c = (c & 1) != 0 ? 0xEDB88320u ^ (c >> 1) : c >> 1;
+            t[i] = c;
+        }
+        return t;
+    }
+
+    // ---- Tests -------------------------------------------------------------
+
     [TestMethod]
     public async Task InjectNes_DecompressesReInjectsRecompresses()
     {
-        var tmp = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        var tmp     = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         var codeDir = Path.Combine(tmp, "base", "code");
         Directory.CreateDirectory(codeDir);
-        var tempDir = Path.Combine(tmp, "temp");
-        Directory.CreateDirectory(tempDir);
-        var toolsDir = Path.Combine(tmp, "tools");
-        Directory.CreateDirectory(toolsDir);
+        Directory.CreateDirectory(Path.Combine(tmp, "tools"));
+
+        // Build RPX payload: iNES stub (1 PRG bank = 16 KiB slot = 16400 bytes total)
+        const int prgBanks = 1;
+        const int slotSize = 16 + prgBanks * 16384; // 16400
+        var payload = new byte[slotSize];
+        payload[0]=0x4E; payload[1]=0x45; payload[2]=0x53; payload[3]=0x1A; // iNES magic
+        payload[4]=(byte)prgBanks;
+        Array.Fill(payload, (byte)0xFF, 16, slotSize - 16);   // fill ROM slot
 
         var rpx = Path.Combine(codeDir, "game.rpx");
-        File.WriteAllBytes(rpx, [0x11]);
-        var rom = Path.Combine(tmp, "game.nes");
-        // Valid 1-PRG-bank NES iNES ROM (header + 16 KiB PRG + 0 CHR)
-        var nesHeader = new byte[16];
-        nesHeader[0] = 0x4E; nesHeader[1] = 0x45; nesHeader[2] = 0x53; nesHeader[3] = 0x1A;
-        nesHeader[4] = 1; // 1 PRG bank = 16 KiB
-        var nesRom = new byte[16 + 16384];
-        nesHeader.CopyTo(nesRom, 0);
-        File.WriteAllBytes(rom, nesRom);
+        File.WriteAllBytes(rpx, BuildMinimalRpx(payload));
 
-        // The mock runner simulates wiiurpxtool -d by writing a stub RPX that
-        // contains a minimal iNES header so RetroInjectHelper can find the ROM slot.
-        // Slot size = 16 + 1*16384 = 16400 bytes; pad to that many 0xFF bytes.
+        // Valid 1-PRG-bank NES ROM (fits in the slot)
+        var nesRom = new byte[slotSize];
+        nesRom[0]=0x4E; nesRom[1]=0x45; nesRom[2]=0x53; nesRom[3]=0x1A;
+        nesRom[4]=(byte)prgBanks;
+        var romPath = Path.Combine(tmp, "game.nes");
+        File.WriteAllBytes(romPath, nesRom);
+
         var runner = new RecordingRunner();
-        runner.OnRun = (tool, args, cwd) =>
-        {
-            if (tool == "wiiurpxtool" && args.Contains("-d"))
-            {
-                // Write a decompressed RPX stub: 32 bytes of padding, then an iNES header
-                // followed by 16 KiB of 0xFF (the ROM slot)
-                var slotSize = 16 + 16384; // 16400
-                var decompressed = new byte[32 + slotSize];
-                // Embed iNES magic at offset 32
-                decompressed[32] = 0x4E; decompressed[33] = 0x45;
-                decompressed[34] = 0x53; decompressed[35] = 0x1A;
-                decompressed[36] = 1; // 1 PRG bank
-                Array.Fill(decompressed, (byte)0xFF, 48, slotSize - 16);
-                File.WriteAllBytes(rpx, decompressed);
-            }
-        };
         try
         {
             await NesSnesInjectService.InjectAsync(
-                toolsDir, Path.Combine(tmp, "base"), rom,
-                new NesSnesInjectOptions { IsNes = true }, runner);
+                Path.Combine(tmp, "tools"),
+                Path.Combine(tmp, "base"),
+                romPath,
+                new NesSnesInjectOptions { IsNes = true },
+                runner);
 
-            // New behavior: retroinject is native; only wiiurpxtool -d and -c are runner calls.
-            Assert.AreEqual(2, runner.Calls.Count);
-            Assert.AreEqual("wiiurpxtool", runner.Calls[0].tool);
-            StringAssert.Contains(runner.Calls[0].args, "-d");
-            Assert.AreEqual("wiiurpxtool", runner.Calls[1].tool);
-            StringAssert.Contains(runner.Calls[1].args, "-c");
+            // No wiiurpxtool runner calls — RPX processing is now native
+            Assert.AreEqual(0, runner.Calls.Count,
+                "Expected zero external tool calls; wiiurpxtool is now native.");
         }
         finally { Directory.Delete(tmp, true); }
     }
@@ -831,34 +916,38 @@ public class NesSnesInjectServiceTests
     [TestMethod]
     public async Task InjectNes_TooBigRom_ThrowsInvalidOperationException()
     {
-        var tmp = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        var tmp     = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         var codeDir = Path.Combine(tmp, "base", "code");
         Directory.CreateDirectory(codeDir);
-        var toolsDir = Path.Combine(tmp, "tools");
-        Directory.CreateDirectory(toolsDir);
-        File.WriteAllBytes(Path.Combine(codeDir, "game.rpx"), [0x11]);
-        var rom = Path.Combine(tmp, "game.nes");
-        File.WriteAllBytes(rom, [0x22]);
+        Directory.CreateDirectory(Path.Combine(tmp, "tools"));
+
+        // RPX payload: iNES stub with 0 PRG banks → slot size = 16 bytes (header only)
+        var payload = new byte[16]; // iNES header only, prgBanks=0
+        payload[0]=0x4E; payload[1]=0x45; payload[2]=0x53; payload[3]=0x1A;
+
+        File.WriteAllBytes(Path.Combine(codeDir, "game.rpx"), BuildMinimalRpx(payload));
+
+        // ROM is 32 bytes — larger than the 16-byte slot → must throw
+        var romPath = Path.Combine(tmp, "game.nes");
+        File.WriteAllBytes(romPath, new byte[32]);
 
         var runner = new RecordingRunner();
-        runner.OnRun = (tool, args, cwd) =>
-        {
-            if (tool == "retroinject")
-                runner.NextResult = new ToolResult { ExitCode = 1, StandardOutput = "ROM is too large for this title", StandardError = "" };
-        };
-
         bool threw = false;
         try
         {
             await NesSnesInjectService.InjectAsync(
-                toolsDir, Path.Combine(tmp, "base"), rom,
-                new NesSnesInjectOptions { IsNes = true }, runner);
+                Path.Combine(tmp, "tools"),
+                Path.Combine(tmp, "base"),
+                romPath,
+                new NesSnesInjectOptions { IsNes = true },
+                runner);
         }
         catch (InvalidOperationException)
         {
             threw = true;
         }
         finally { if (Directory.Exists(tmp)) Directory.Delete(tmp, true); }
-        Assert.IsTrue(threw, "Expected InvalidOperationException for too-large ROM");
+
+        Assert.IsTrue(threw, "Expected InvalidOperationException for too-large ROM.");
     }
 }

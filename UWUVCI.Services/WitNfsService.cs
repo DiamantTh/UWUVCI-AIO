@@ -1,4 +1,3 @@
-using System.Text;
 using System.Xml;
 using UWUVCI.Core.Pipeline;
 using UWUVCI.Core.Tooling;
@@ -94,20 +93,12 @@ public static class WitNfsService
         foreach (var nfs in Directory.GetFiles(contentDir, "*.nfs"))
             try { File.Delete(nfs); } catch { /* best-effort */ }
 
-        // ---- 7) nfs2iso2nfs -enc (injection) ---------------------------------
+        // ---- 7) NFS encryption (native AES-128-CBC replacement for nfs2iso2nfs) --------
         options.Progress?.Invoke(60, "Injecting ROM…");
-        var encArgs = BuildNfsArgs(options);
-        var nfsResult = await runner.RunAsync("nfs2iso2nfs", encArgs, workingDirectory: contentDir, cancellationToken: cancellationToken).ConfigureAwait(false);
-        if (!nfsResult.Success)
-            throw new InvalidOperationException($"nfs2iso2nfs failed (exit {nfsResult.ExitCode}): {nfsResult.StandardError}");
-
-        // Wait for .nfs files to appear
-        var nfsDeadline = DateTime.UtcNow.AddSeconds(30);
-        while (DateTime.UtcNow < nfsDeadline && !Directory.EnumerateFiles(contentDir, "*.nfs").Any())
-            await Task.Delay(250, cancellationToken).ConfigureAwait(false);
-
-        if (!Directory.EnumerateFiles(contentDir, "*.nfs").Any())
-            throw new InvalidOperationException("nfs2iso2nfs produced no .nfs output files.");
+        var keyPath = NfsConverter.FindKeyFile(baseRomPath);
+        await Task.Run(() =>
+            NfsConverter.EncryptIsoToNfs(gameIso, contentDir, keyPath),
+            cancellationToken).ConfigureAwait(false);
 
         // Remove working ISO
         try { if (File.Exists(gameIso)) File.Delete(gameIso); } catch { /* best-effort */ }
@@ -117,34 +108,6 @@ public static class WitNfsService
 
     // ---- helpers -----------------------------------------------------------
 
-    private static string BuildNfsArgs(NfsInjectOptions opt)
-    {
-        // GCN always uses -passthrough
-        bool useHomebrew = opt.Kind != InjectKind.WiiStandard;
-        bool passthrough = opt.Kind == InjectKind.GCN ||
-                           (opt.Kind != InjectKind.WiiStandard && opt.Passthrough);
-
-        var sb = new StringBuilder("-enc ");
-        if (useHomebrew)  sb.Append("-homebrew ");
-        if (passthrough)  sb.Append("-passthrough ");
-
-        if (opt.Kind != InjectKind.GCN)
-        {
-            sb.Append(opt.Index switch
-            {
-                2 => "-horizontal ",
-                3 => "-wiimote ",
-                4 => "-instantcc ",
-                5 => "-nocc ",
-                _ => ""
-            });
-            if (opt.LR) sb.Append("-lrpatch ");
-        }
-
-        sb.Append("-iso game.iso");
-        return sb.ToString();
-    }
-
     private static void PatchGcnMetaXml(string isoHostPath, string metaXmlPath)
     {
         if (!File.Exists(isoHostPath) || !File.Exists(metaXmlPath)) return;
@@ -153,7 +116,6 @@ public static class WitNfsService
         using (var fs = new FileStream(isoHostPath, FileMode.Open, FileAccess.Read))
             _ = fs.Read(buf, 0, 4);
 
-        var gameId = Encoding.ASCII.GetString(buf);
         var hex    = Convert.ToHexString(buf).ToLowerInvariant();
 
         var doc = new XmlDocument();

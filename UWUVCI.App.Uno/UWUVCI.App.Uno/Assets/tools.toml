@@ -1,8 +1,9 @@
 # UWUVCI Tool Manifest
 # Only genuinely external, cross-platform tools belong here.
 # Windows-only tools (N64Converter, retroinject, psb, MArchiveBatchTool,
-# BuildPcePkg, BuildTurboCDPcePkg) have been replaced by native C# implementations
-# in UWUVCI.Services and are no longer downloaded as external binaries.
+# BuildPcePkg, BuildTurboCDPcePkg) have been replaced by native C# implementations.
+# nfs2iso2nfs and wiiurpxtool have been replaced by NfsConverter.cs and
+# WiiURpxService.cs (native AES-128-CBC / ELF zlib implementations).
 #
 # sha256: fill in after verifying the binary yourself.
 #         ToolDownloadService will refuse to download entries without sha256.
@@ -18,21 +19,3 @@ windows_only = false
 sha256       = ""
 download_url = ""
 # Source: https://wit.wiimm.de/  (Wiimm's ISO Tools)
-
-[[tools]]
-name         = "nfs2iso2nfs"
-windows_file = "nfs2iso2nfs.exe"
-linux_file   = "nfs2iso2nfs"
-windows_only = false
-sha256       = ""
-download_url = ""
-# Source: https://gbatemp.net/threads/nfs2iso2nfs.415071/
-
-[[tools]]
-name         = "wiiurpxtool"
-windows_file = "wiiurpxtool.exe"
-linux_file   = "wiiurpxtool"
-windows_only = false
-sha256       = ""
-download_url = ""
-# Source: https://github.com/0CBH0/wiiurpxtool

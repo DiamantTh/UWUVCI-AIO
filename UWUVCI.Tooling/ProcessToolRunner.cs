@@ -6,23 +6,19 @@ namespace UWUVCI.Tooling;
 
 /// <summary>
 /// Runs external tools as real child processes.
-/// On Linux/Wine: .exe files are automatically prefixed with "wine".
-/// Wine wait delay is configurable for slow Wine startup scenarios.
+/// All remaining external tools (wit) are native Linux/Windows binaries;
+/// Wine wrapping is no longer required.
 /// </summary>
 public sealed class ProcessToolRunner : IToolRunner
 {
     private readonly IToolResolver _resolver;
-    private readonly IPlatformInfo _platform;
-    private readonly int _wineWaitDelayMs;
 
     public ProcessToolRunner(
         IToolResolver resolver,
-        IPlatformInfo platform,
-        int wineWaitDelayMs = 0)
+        IPlatformInfo platform,    // kept for API compatibility
+        int wineWaitDelayMs = 0)   // kept for API compatibility
     {
         _resolver = resolver;
-        _platform = platform;
-        _wineWaitDelayMs = wineWaitDelayMs;
     }
 
     public bool CanRun(string toolName) => _resolver.IsAvailable(toolName);
@@ -36,31 +32,7 @@ public sealed class ProcessToolRunner : IToolRunner
         var toolPath = _resolver.Resolve(toolName)
             ?? throw new InvalidOperationException($"Tool '{toolName}' not found.");
 
-        string exe;
-        string args;
-
-        bool isWindowsExe = toolPath.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
-                         || toolPath.EndsWith(".dll", StringComparison.OrdinalIgnoreCase);
-
-        if (_platform.IsWineLike && isWindowsExe)
-        {
-            // Run via Wine
-            exe  = "wine";
-            args = Quote(toolPath) + (string.IsNullOrEmpty(arguments) ? "" : " " + arguments);
-        }
-        else if (_platform.IsLinux && isWindowsExe)
-        {
-            // Linux but no Wine detected – best effort (may fail)
-            exe  = "wine";
-            args = Quote(toolPath) + (string.IsNullOrEmpty(arguments) ? "" : " " + arguments);
-        }
-        else
-        {
-            exe  = toolPath;
-            args = arguments;
-        }
-
-        var psi = new ProcessStartInfo(exe, args)
+        var psi = new ProcessStartInfo(toolPath, arguments)
         {
             UseShellExecute        = false,
             RedirectStandardOutput = true,
@@ -80,9 +52,6 @@ public sealed class ProcessToolRunner : IToolRunner
         process.Start();
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();
-
-        if (_platform.IsWineLike && _wineWaitDelayMs > 0)
-            await Task.Delay(_wineWaitDelayMs, cancellationToken).ConfigureAwait(false);
 
         await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
 

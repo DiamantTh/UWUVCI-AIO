@@ -38,7 +38,7 @@ public static class NesSnesInjectService
         var rpxFile = rpxFiles[0];
 
         // 1) Decompress RPX
-        await RpxToolAsync(toolsPath, rpxFile, compress: false, runner, cancellationToken).ConfigureAwait(false);
+        RpxTool(rpxFile, compress: false);
 
         // 2) Optional: pixel-perfect aspect ratio patch
         if (opt.PixelPerfect)
@@ -67,22 +67,17 @@ public static class NesSnesInjectService
         }
 
         // 5) Recompress RPX
-        await RpxToolAsync(toolsPath, rpxFile, compress: true, runner, cancellationToken).ConfigureAwait(false);
+        RpxTool(rpxFile, compress: true);
     }
 
     // ---- helpers -----------------------------------------------------------
 
-    private static async Task RpxToolAsync(
-        string toolsPath, string rpxPath, bool compress,
-        IToolRunner runner, CancellationToken ct)
+    private static void RpxTool(string rpxPath, bool compress)
     {
-        var prefix = compress ? "-c" : "-d";
-        var result = await runner.RunAsync(
-            "wiiurpxtool",
-            $"{prefix} \"{rpxPath}\"",
-            cancellationToken: ct).ConfigureAwait(false);
-        if (!result.Success)
-            throw new InvalidOperationException(
-                $"wiiurpxtool {prefix} failed (exit {result.ExitCode}): {result.StandardError}");
+        // Native replacement for wiiurpxtool -d / -c
+        if (compress)
+            WiiURpxService.Compress(rpxPath);
+        else
+            WiiURpxService.Decompress(rpxPath);
     }
 }
