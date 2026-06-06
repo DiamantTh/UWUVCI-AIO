@@ -69,6 +69,7 @@ Target: Uno Desktop first, Windows + Linux/KDE, WASM-ready architecture
 - [x] **Phase 15: Base ROM management + download infrastructure** — **COMPLETE**
 - [x] **Phase 16: Multi-OS verification + native build** — **COMPLETE**
 - [x] **Phase 17: Polish + final testing** — **COMPLETE**
+- [ ] **Phase 18: Native C# replacements for PSB.M / pce.pkg formats** — pending
 
 **Target:** All phases 14-17 complete by end of next 5 coding sessions max.  
 **Success criterion:** app fully functional, no external tool dependencies without multi-OS support, no GitHub write, native Windows/Linux launch.
@@ -608,17 +609,28 @@ Goal: Audit all external tools used by injection services; document cross-platfo
 | `wit` | ✓ native | ✓ native | keep, cross-platform |
 | `nfs2iso2nfs` | ✓ native | ✓ native | keep, cross-platform |
 | `wiiurpxtool` | ✓ native | ✓ native | keep, cross-platform |
-| `N64Converter` | ✓ | no native build | Windows-only; Linux: disabled without Wine |
-| `retroinject` | ✓ | no native build | Windows-only; Linux: disabled without Wine |
-| `cnuspacker` | ✓ | no native build | Windows-only |
-| `MArchiveBatchTool` | ✓ | no native build | Windows-only |
-| `BuildPcePkg` | ✓ | no native build | Windows-only |
+| `N64Converter` | ✓ | no native build | **Reimplementiert in C#** → `N64RomConverter.cs` |
+| `retroinject` | ✓ | no native build | **Reimplementiert in C#** → `RetroInjectHelper.cs` |
+| `cnuspacker` | ✓ | no native build | **Kein aktiver Aufruf** (NUS-Packer-Pfad entfernt) |
+| `MArchiveBatchTool` | ✓ | no native build | **Stub** `PlatformNotSupportedException` → Phase 18 |
+| `BuildPcePkg` | ✓ | no native build | **Stub** `PlatformNotSupportedException` → Phase 18 |
 | `png2tga` / image tools | — | — | replaced by SkiaSharp + TgaService (Phase 5) |
 
-**Decisions:**
+**Decisions (original):**
 - Windows-only tools: feature disabled on Linux if Wine absent. No Wine forced.
 - Cross-platform: IToolRunner resolves native binary per platform via ManifestToolResolver.
 - tools.toml: sha256 and download_url left empty (must be filled from verified binaries).
+
+**Decision update (Phase 18 session):**
+- Statt Wine-Fallback werden alle vormals Windows-only-Tools nativ in C# reimplementiert.
+- `N64Converter.exe` → `N64RomConverter.cs` (z64/v64/n64 Formatkonvertierung)
+- `retroinject.exe` → `RetroInjectHelper.cs` (iNES-Header-Suche + SNES NINTENDO-Tag-Suche im RPX)
+- `pokepatch.exe` → `GbaPokePatch.cs` (aus Legacy-Code portiert)
+- `ChangeAspectRatio` → nicht-fataler Warning-Log (optionaler Pixel-Perfect-Pfad, selten genutzt)
+- `psb.exe` (PSB.M inject) → `PlatformNotSupportedException` bis Phase 18 fertig
+- `MArchiveBatchTool.exe` → `PlatformNotSupportedException` bis Phase 18 fertig
+- `BuildPcePkg.exe` / `BuildTurboCDPcePkg.exe` → `PlatformNotSupportedException` bis Phase 18 fertig
+- tools.toml: Windows-only-Einträge entfernt (N64Converter, retroinject, cnuspacker, MArchiveBatchTool, BuildPcePkg)
 
 **What was NOT done (corrected from prior Haiku run):**
 - ToolServiceWrapper.cs was orphaned code not used by any service → removed.
@@ -628,6 +640,7 @@ Exit criteria:
 - [x] All tools categorized (cross-platform vs Windows-only)
 - [x] tools.toml accurate: no fake hashes, correct windows_only flags
 - [x] 118/118 tests, 0 build errors
+- [x] Windows-only tools nativ reimplementiert oder als PlatformNotSupportedException gestubbt
 
 ## Phase 15 - Base ROM Download Infrastructure ✅
 
@@ -672,6 +685,53 @@ Results:
 - [x] 118/118 tests, 0 build errors
 
 **V4.0.0 is ready for tagging.** Run `git tag v4.0.0` when ready for public release.
+
+## Phase 18 - Native C# Replacements für Windows-only Tools
+
+**Status: PARTIAL** (nativ implementiert wo Format bekannt; Stubs für noch unbekannte Formate)
+
+**Ziel:** Kein einziger Injection-Pfad soll Windows-only-Binaries aufrufen. Stattdessen: native C#-Implementierung oder `PlatformNotSupportedException`-Stub bis Format dokumentiert ist.
+
+### Abgeschlossen
+
+| Tool | Ersatz | Datei |
+|------|--------|-------|
+| `N64Converter.exe` | nativ C# | `UWUVCI.Services/N64RomConverter.cs` |
+| `retroinject.exe` | nativ C# | `UWUVCI.Services/RetroInjectHelper.cs` |
+| `pokepatch.exe` | nativ C# (aus Legacy portiert) | `UWUVCI.Services/GbaPokePatch.cs` |
+| `ChangeAspectRatio` | nicht-fataler Log (optionaler Pfad) | `NesSnesInjectService.cs` |
+
+### Ausstehend (PlatformNotSupportedException-Stub)
+
+| Tool | Verwendet in | Format-Spec benötigt |
+|------|-------------|----------------------|
+| `psb.exe` | `GbaInjectService` (GBA ROM inject) | PSB.M: MArchive M-Verschlüsselung + PSB-Binary-Parser |
+| `MArchiveBatchTool.exe` | `GbaInjectService` (Dark-Filter removal) | MArchive zlib-stream-cipher Archivformat + PSB |
+| `BuildPcePkg.exe` | `Tg16InjectService` (TG16 ROM) | Wii U pce.pkg Container-Format |
+| `BuildTurboCDPcePkg.exe` | `Tg16InjectService` (TurboCD disc) | Wii U pce.pkg für Disc-Images |
+
+### Format-Recherche (für künftige Implementierung)
+
+**PSB.M / MArchive:**
+- Projektbezug: `alldata.psb.m` in GBA Wii U VC Bases
+- MArchive: stream-cipher (Seed + KeyLength), dann zlib
+- PSB: binäres Key-Value-Format, ähnlich wie MessagePack
+- Referenz-Implementierung (C#): https://github.com/Thealexbarney/MArchiveBatchTool
+- Wenn M-Entschlüsselung bekannt ist (Seed: `MX8wgGEJ2+M47`, KeyLength: 80), ist der Algorithmus reproduzierbar
+
+**pce.pkg (PC Engine / TurboGrafx):**
+- Format unbekannt, kein Open-Source-Referenzprojekt gefunden
+- `BuildPcePkg.exe` und `BuildTurboCDPcePkg.exe` sind proprietäre Binaries
+- Benötigt: Reverse Engineering oder offizielle Dokumentation
+
+### Exit-Kriterien (Phase 18 als COMPLETE)
+
+- [ ] PSB.M: `GbaInjectService.InjectAsync` ohne `PlatformNotSupportedException` lauffähig
+- [ ] MArchiveBatchTool: `GbaInjectService.RemoveDarkFilterAsync` native C#
+- [ ] BuildPcePkg: `Tg16InjectService.BuildTg16PkgAsync` native C#
+- [ ] BuildTurboCDPcePkg: `Tg16InjectService.BuildTurboCdPkgAsync` native C#
+- [ ] Tests für alle vier neuen Implementierungen
+- [ ] tools.toml: weiterhin ohne Windows-only-Einträge
 
 ## Phase 12 - InjectOrchestrator & UI Wiring ✅
 

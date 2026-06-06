@@ -576,9 +576,9 @@ public class N64InjectServiceTests
             var runner = new RecordingRunner();
             await N64InjectService.InjectAsync(
                 toolsDir, Path.Combine(tmp, "base"), injectRom,
-                new N64InjectOptions(), runner);
-            Assert.AreEqual(1, runner.Calls.Count);
-            Assert.AreEqual("N64Converter", runner.Calls[0].tool);
+                new N64InjectOptions());
+            // N64Converter is now natively reimplemented; no external tool call expected.
+            Assert.AreEqual(0, runner.Calls.Count);
             var iniDest = Path.Combine(cfgDir, "game.z64.ini");
             Assert.IsTrue(File.Exists(iniDest), "blank.ini should be installed");
         }
@@ -682,7 +682,7 @@ public class MsxInjectServiceTests
 public class Tg16InjectServiceTests
 {
     [TestMethod]
-    public async Task InjectAsync_Rom_CallsBuildPcePkg_AndInstallsPkg()
+    public async Task InjectAsync_Rom_ThrowsPlatformNotSupportedException()
     {
         var tmp = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         var tempDir = Path.Combine(tmp, "temp");
@@ -697,20 +697,22 @@ public class Tg16InjectServiceTests
         File.WriteAllBytes(rom, [0xAA]);
 
         var runner = new RecordingRunner();
-        runner.OnRun = (tool, args, cwd) =>
-        {
-            if (tool == "BuildPcePkg")
-                File.WriteAllBytes(Path.Combine(cwd ?? tempDir, "pce.pkg"), [0xBB]);
-        };
 
+        bool threw = false;
         try
         {
             await Tg16InjectService.InjectAsync(toolsDir, tempDir, baseDir, rom, runner);
-            Assert.AreEqual(1, runner.Calls.Count);
-            Assert.AreEqual("BuildPcePkg", runner.Calls[0].tool);
-            Assert.IsTrue(File.Exists(Path.Combine(pceEmuDir, "pce.pkg")));
         }
-        finally { Directory.Delete(tmp, true); }
+        catch (PlatformNotSupportedException)
+        {
+            threw = true;
+        }
+        finally { if (Directory.Exists(tmp)) Directory.Delete(tmp, true); }
+
+        // BuildPcePkg is now a PlatformNotSupportedException stub (native pce.pkg
+        // format not yet implemented); no runner calls should be made.
+        Assert.IsTrue(threw, "Expected PlatformNotSupportedException from BuildPcePkg stub");
+        Assert.AreEqual(0, runner.Calls.Count);
     }
 }
 
@@ -782,22 +784,46 @@ public class NesSnesInjectServiceTests
         var rpx = Path.Combine(codeDir, "game.rpx");
         File.WriteAllBytes(rpx, [0x11]);
         var rom = Path.Combine(tmp, "game.nes");
-        File.WriteAllBytes(rom, [0x22]);
+        // Valid 1-PRG-bank NES iNES ROM (header + 16 KiB PRG + 0 CHR)
+        var nesHeader = new byte[16];
+        nesHeader[0] = 0x4E; nesHeader[1] = 0x45; nesHeader[2] = 0x53; nesHeader[3] = 0x1A;
+        nesHeader[4] = 1; // 1 PRG bank = 16 KiB
+        var nesRom = new byte[16 + 16384];
+        nesHeader.CopyTo(nesRom, 0);
+        File.WriteAllBytes(rom, nesRom);
 
+        // The mock runner simulates wiiurpxtool -d by writing a stub RPX that
+        // contains a minimal iNES header so RetroInjectHelper can find the ROM slot.
+        // Slot size = 16 + 1*16384 = 16400 bytes; pad to that many 0xFF bytes.
         var runner = new RecordingRunner();
+        runner.OnRun = (tool, args, cwd) =>
+        {
+            if (tool == "wiiurpxtool" && args.Contains("-d"))
+            {
+                // Write a decompressed RPX stub: 32 bytes of padding, then an iNES header
+                // followed by 16 KiB of 0xFF (the ROM slot)
+                var slotSize = 16 + 16384; // 16400
+                var decompressed = new byte[32 + slotSize];
+                // Embed iNES magic at offset 32
+                decompressed[32] = 0x4E; decompressed[33] = 0x45;
+                decompressed[34] = 0x53; decompressed[35] = 0x1A;
+                decompressed[36] = 1; // 1 PRG bank
+                Array.Fill(decompressed, (byte)0xFF, 48, slotSize - 16);
+                File.WriteAllBytes(rpx, decompressed);
+            }
+        };
         try
         {
             await NesSnesInjectService.InjectAsync(
                 toolsDir, Path.Combine(tmp, "base"), rom,
                 new NesSnesInjectOptions { IsNes = true }, runner);
 
-            // Expected calls: wiiurpxtool -d, retroinject, wiiurpxtool -c
-            Assert.AreEqual(3, runner.Calls.Count);
+            // New behavior: retroinject is native; only wiiurpxtool -d and -c are runner calls.
+            Assert.AreEqual(2, runner.Calls.Count);
             Assert.AreEqual("wiiurpxtool", runner.Calls[0].tool);
             StringAssert.Contains(runner.Calls[0].args, "-d");
-            Assert.AreEqual("retroinject", runner.Calls[1].tool);
-            Assert.AreEqual("wiiurpxtool", runner.Calls[2].tool);
-            StringAssert.Contains(runner.Calls[2].args, "-c");
+            Assert.AreEqual("wiiurpxtool", runner.Calls[1].tool);
+            StringAssert.Contains(runner.Calls[1].args, "-c");
         }
         finally { Directory.Delete(tmp, true); }
     }

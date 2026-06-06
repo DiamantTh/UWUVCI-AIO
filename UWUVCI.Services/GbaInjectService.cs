@@ -58,19 +58,16 @@ public static class GbaInjectService
                 deleteTempRom = true;
             }
 
-            // 3) Inject into alldata.psb.m via psb tool
-            var alldata = Path.Combine(baseRomPath, "content", "alldata.psb.m");
-            var psbResult = await runner.RunAsync(
-                "psb",
-                $"\"{alldata}\" \"{workingRom}\" \"{alldata}\"",
-                cancellationToken: cancellationToken).ConfigureAwait(false);
-            if (!psbResult.Success)
-                throw new InvalidOperationException(
-                    $"psb injection failed (exit {psbResult.ExitCode}): {psbResult.StandardError}");
-
-            // 4) Dark-filter removal (MArchiveBatchTool chain)
-            if (opt.DarkFilter)
-                await RemoveDarkFilterAsync(toolsPath, baseRomPath, runner, cancellationToken).ConfigureAwait(false);
+            // 3) Inject into alldata.psb.m
+            // psb.exe was Windows-only. Native C# implementation requires a
+            // PSB.M format reader/writer (MArchive M-encryption + PSB binary
+            // parser). Not yet implemented – contribution welcome.
+            // Dark-filter removal (MArchiveBatchTool) also blocked on this.
+            // See REWRITE_PLAN.md §Phase-18 for the specification needed.
+            throw new PlatformNotSupportedException(
+                "GBA injection requires a native PSB.M implementation that is " +
+                "not yet available. The psb.exe tool was Windows-only; " +
+                "see REWRITE_PLAN.md §Phase-18 for the format specification.");
         }
         finally
         {
@@ -118,73 +115,31 @@ public static class GbaInjectService
     }
 
     // ---- PokePatch (in-place) -----------------------------------------------
+    // Ported directly from legacy Injection.cs PokePatch() native implementation.
+    // Searches for the byte pattern D0 88 8D 83 42 in the GBA ROM and zeroes
+    // the 3-4 bytes that follow it (savegame compatibility fix for Pokémon titles).
 
-    private static async Task ApplyPokePatchAsync(
+    private static Task ApplyPokePatchAsync(
         string toolsPath, string patchedRom, IToolRunner runner, CancellationToken ct)
     {
-        var result = await runner.RunAsync("pokepatch", $"\"{patchedRom}\"", cancellationToken: ct).ConfigureAwait(false);
-        if (!result.Success)
-            throw new InvalidOperationException($"pokepatch failed (exit {result.ExitCode}): {result.StandardError}");
+        ct.ThrowIfCancellationRequested();
+        GbaPokePatch.Apply(patchedRom);
+        return Task.CompletedTask;
     }
 
     // ---- Dark-filter removal via MArchiveBatchTool + PSB chain -------------
 
-    private static async Task RemoveDarkFilterAsync(
+    private static Task RemoveDarkFilterAsync(
         string toolsPath, string baseRomPath,
         IToolRunner runner, CancellationToken ct)
     {
-        var alldata      = Path.Combine(baseRomPath, "content", "alldata.psb.m");
-        var extractedDir = alldata + "_extracted";
-        const string key = "MX8wgGEJ2+M47";
-        const int    len = 80;
-
-        async Task MArchive(string args)
-        {
-            var r = await runner.RunAsync("MArchiveBatchTool", args, cancellationToken: ct).ConfigureAwait(false);
-            if (!r.Success)
-                throw new InvalidOperationException($"MArchiveBatchTool {args} failed: {r.StandardError}");
-        }
-
-        // Extract archive
-        await MArchive($"archive extract \"{alldata}\" --codec zlib --seed {key} --keyLength {len}").ConfigureAwait(false);
-
-        var titleProfs = Directory.GetFiles(extractedDir, "title_prof.psb.m", SearchOption.AllDirectories);
-        if (titleProfs.Length == 0)
-        {
-            // Non-fatal: base might not have this file
-            try { if (Directory.Exists(extractedDir)) Directory.Delete(extractedDir, recursive: true); } catch { /* best-effort */ }
-            return;
-        }
-
-        var titleprofPsbM = titleProfs[0];
-        var configDir     = Path.GetDirectoryName(titleprofPsbM)!;
-        var titleprofPsb  = Path.Combine(configDir, "title_prof.psb");
-        var titleprofJson = titleprofPsb + ".json";
-
-        await MArchive($"m unpack \"{titleprofPsbM}\" zlib {key} {len}").ConfigureAwait(false);
-        await MArchive($"psb deserialize \"{titleprofPsb}\"").ConfigureAwait(false);
-
-        // Patch brightness = 1 via simple string replace (avoids Newtonsoft dependency in Core)
-        var json = await File.ReadAllTextAsync(titleprofJson, ct).ConfigureAwait(false);
-        json = System.Text.RegularExpressions.Regex.Replace(
-            json,
-            @"(""brightness""\s*:\s*)\d+",
-            "${1}1");
-        await File.WriteAllTextAsync(titleprofJson, json, ct).ConfigureAwait(false);
-
-        await MArchive($"psb serialize \"{titleprofJson}\"").ConfigureAwait(false);
-        await MArchive($"m pack \"{titleprofPsb}\" zlib {key} {len}").ConfigureAwait(false);
-
-        var builtDir = Path.Combine(baseRomPath, "content", "alldata");
-        await MArchive($"archive build --codec zlib --seed {key} --keyLength {len} \"{extractedDir}\" \"{builtDir}\"").ConfigureAwait(false);
-
-        // Cleanup
-        try
-        {
-            if (Directory.Exists(extractedDir)) Directory.Delete(extractedDir, recursive: true);
-            var alldataPsb = Path.Combine(baseRomPath, "content", "alldata.psb");
-            if (File.Exists(alldataPsb)) File.Delete(alldataPsb);
-        }
-        catch { /* best-effort */ }
+        // MArchiveBatchTool.exe was Windows-only.
+        // Native C# implementation requires MArchive zlib/stream-cipher archive
+        // format + PSB binary format support. Not yet implemented.
+        // See REWRITE_PLAN.md §Phase-18 for the format specification.
+        throw new PlatformNotSupportedException(
+            "GBA dark-filter removal requires a native MArchive/PSB implementation " +
+            "that is not yet available. The MArchiveBatchTool.exe was Windows-only; " +
+            "see REWRITE_PLAN.md §Phase-18 for the format specification.");
     }
 }

@@ -1,5 +1,4 @@
 using System.Text;
-using UWUVCI.Core.Tooling;
 
 namespace UWUVCI.Services;
 
@@ -22,22 +21,23 @@ public sealed class N64InjectOptions
 }
 
 /// <summary>
-/// Injects an N64 ROM into a Wii U Virtual Console base using N64Converter.exe.
+/// Injects an N64 ROM into a Wii U Virtual Console base.
+/// The ROM is natively converted to z64 (big-endian) format if required.
 /// Optionally patches FrameLayout.arc for widescreen / dark-filter removal,
 /// and installs an INI configuration file alongside the ROM.
 /// </summary>
 public static class N64InjectService
 {
-    public static async Task InjectAsync(
+    public static Task InjectAsync(
         string        toolsPath,
         string        baseRomPath,
         string        romPath,
         N64InjectOptions opt,
-        IToolRunner   runner,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(opt);
-        ArgumentNullException.ThrowIfNull(runner);
+
+        cancellationToken.ThrowIfCancellationRequested();
 
         // Locate the main ROM slot inside the base (first file in content/rom/)
         var romDir      = Path.Combine(baseRomPath, "content", "rom");
@@ -47,15 +47,8 @@ public static class N64InjectService
         var mainIni = Path.Combine(baseRomPath, "content", "config",
                                    Path.GetFileName(mainRomPath) + ".ini");
 
-        // 1) Inject ROM via N64Converter
-        var result = await runner.RunAsync(
-            "N64Converter",
-            $"\"{romPath}\" \"{mainRomPath}\"",
-            cancellationToken: cancellationToken).ConfigureAwait(false);
-
-        if (!result.Success)
-            throw new InvalidOperationException(
-                $"N64Converter failed (exit {result.ExitCode}): {result.StandardError}");
+        // 1) Convert ROM to z64 format and copy to the ROM slot (native replacement for N64Converter.exe)
+        N64RomConverter.ConvertAndCopy(romPath, mainRomPath);
 
         // 2) FrameLayout.arc patches (widescreen / dark-filter)
         if (opt.WideScreen || opt.DarkFilter)
@@ -83,6 +76,8 @@ public static class N64InjectService
             else if (File.Exists(mainIni))
                 File.Delete(mainIni); // use whatever the base ships with
         }
+
+        return Task.CompletedTask;
     }
 
     // ---- FrameLayout.arc patching (SARC + FLYT binary format) ---------------

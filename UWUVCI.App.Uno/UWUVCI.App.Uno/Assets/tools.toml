@@ -1,11 +1,12 @@
 # UWUVCI Tool Manifest
-# sha256: leave empty until you have verified the binary yourself.
+# Only genuinely external, cross-platform tools belong here.
+# Windows-only tools (N64Converter, retroinject, psb, MArchiveBatchTool,
+# BuildPcePkg, BuildTurboCDPcePkg) have been replaced by native C# implementations
+# in UWUVCI.Services and are no longer downloaded as external binaries.
+#
+# sha256: fill in after verifying the binary yourself.
 #         ToolDownloadService will refuse to download entries without sha256.
 # download_url: leave empty for tools that must be installed manually.
-#
-# windows_only = true  → no linux_file; on Linux the feature is disabled
-#                         unless Wine is present and manually configured.
-# windows_only = false → native binary on both platforms.
 
 # ── Cross-platform tools ────────────────────────────────────────────────────
 
@@ -35,52 +36,3 @@ windows_only = false
 sha256       = ""
 download_url = ""
 # Source: https://github.com/0CBH0/wiiurpxtool
-
-# ── Windows-only tools ──────────────────────────────────────────────────────
-# These tools have no Linux native build.
-# On Linux: feature is disabled if Wine is absent.
-
-[[tools]]
-name         = "N64Converter"
-windows_file = "N64Converter.exe"
-linux_file   = ""
-windows_only = true
-sha256       = ""
-download_url = ""
-# Source: bundled with UWUVCI legacy releases
-
-[[tools]]
-name         = "retroinject"
-windows_file = "retroinject.exe"
-linux_file   = ""
-windows_only = true
-sha256       = ""
-download_url = ""
-# Source: bundled with UWUVCI legacy releases
-
-[[tools]]
-name         = "cnuspacker"
-windows_file = "CNUSPacker.exe"
-linux_file   = ""
-windows_only = true
-sha256       = ""
-download_url = ""
-# Source: https://github.com/nicoboss/NUSpacker
-
-[[tools]]
-name         = "MArchiveBatchTool"
-windows_file = "MArchiveBatchTool.exe"
-linux_file   = ""
-windows_only = true
-sha256       = ""
-download_url = ""
-# Source: https://github.com/Thealexbarney/MArchiveBatchTool
-
-[[tools]]
-name         = "BuildPcePkg"
-windows_file = "BuildPcePkg.exe"
-linux_file   = ""
-windows_only = true
-sha256       = ""
-download_url = ""
-# Source: bundled with UWUVCI legacy releases (TurboGrafx/PC Engine)

@@ -45,53 +45,31 @@ public static class Tg16InjectService
 
     // ---- builders ----------------------------------------------------------
 
-    private static async Task<string> BuildTurboCdPkgAsync(
+    private static Task<string> BuildTurboCdPkgAsync(
         string toolsPath, string tempPath, string romDir,
         IToolRunner runner, CancellationToken ct)
     {
-        var testDir = Path.Combine(tempPath, "test");
-        if (Directory.Exists(testDir))
-            Directory.Delete(testDir, recursive: true);
-
-        // Copy ROM directory structure into tempPath/test
-        IOHelpers.MoveOrCopyDirectory(romDir, testDir);
-
-        var result = await runner.RunAsync(
-            "BuildTurboCDPcePkg",
-            "test",
-            workingDirectory: tempPath,
-            cancellationToken: ct).ConfigureAwait(false);
-
-        // Cleanup test dir
-        try { Directory.Delete(testDir, recursive: true); } catch { /* best-effort */ }
-
-        if (!result.Success)
-            throw new InvalidOperationException(
-                $"BuildTurboCDPcePkg failed (exit {result.ExitCode}): {result.StandardError}");
-
-        var pkg = Path.Combine(tempPath, "pce.pkg");
-        if (!File.Exists(pkg))
-            throw new FileNotFoundException("BuildTurboCDPcePkg did not produce pce.pkg.", pkg);
-        return pkg;
+        // BuildTurboCDPcePkg.exe was Windows-only.
+        // Native C# implementation requires knowledge of the Wii U TG16 pce.pkg
+        // container format for TurboCD disc images. Not yet implemented.
+        // See REWRITE_PLAN.md §Phase-18 for the format specification.
+        throw new PlatformNotSupportedException(
+            "TurboCD injection requires a native pce.pkg builder for disc images " +
+            "that is not yet available. The BuildTurboCDPcePkg.exe was Windows-only; " +
+            "see REWRITE_PLAN.md §Phase-18 for the format specification.");
     }
 
-    private static async Task<string> BuildTg16PkgAsync(
+    private static Task<string> BuildTg16PkgAsync(
         string toolsPath, string tempPath, string romPath,
         IToolRunner runner, CancellationToken ct)
     {
-        var result = await runner.RunAsync(
-            "BuildPcePkg",
-            $"\"{romPath}\"",
-            workingDirectory: tempPath,
-            cancellationToken: ct).ConfigureAwait(false);
-
-        if (!result.Success)
-            throw new InvalidOperationException(
-                $"BuildPcePkg failed (exit {result.ExitCode}): {result.StandardError}");
-
-        var pkg = Path.Combine(tempPath, "pce.pkg");
-        if (!File.Exists(pkg))
-            throw new FileNotFoundException("BuildPcePkg did not produce pce.pkg.", pkg);
-        return pkg;
+        // BuildPcePkg.exe was Windows-only.
+        // Native C# implementation requires knowledge of the Wii U pce.pkg
+        // container format. Not yet implemented.
+        // See REWRITE_PLAN.md §Phase-18 for the format specification.
+        throw new PlatformNotSupportedException(
+            "TG16 injection requires a native pce.pkg builder that is not yet " +
+            "available. The BuildPcePkg.exe was Windows-only; " +
+            "see REWRITE_PLAN.md §Phase-18 for the format specification.");
     }
 }

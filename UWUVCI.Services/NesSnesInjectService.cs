@@ -43,25 +43,19 @@ public static class NesSnesInjectService
         // 2) Optional: pixel-perfect aspect ratio patch
         if (opt.PixelPerfect)
         {
-            var res = await runner.RunAsync(
-                "ChangeAspectRatio",
-                $"\"{rpxFile}\"",
-                cancellationToken: cancellationToken).ConfigureAwait(false);
-            // Non-fatal: log but continue
-            if (!res.Success)
-                Console.Error.WriteLine($"[NesSnes] ChangeAspectRatio failed (exit {res.ExitCode}): {res.StandardError}");
+            // ChangeAspectRatio.exe was Windows-only; native implementation pending.
+            // Non-fatal: log and continue.
+            Console.Error.WriteLine(
+                "[NesSnes] PixelPerfect patch skipped: native implementation of " +
+                "ChangeAspectRatio not yet available.");
         }
 
-        // 3) Inject ROM via retroinject
-        var injectResult = await runner.RunAsync(
-            "retroinject",
-            $"\"{rpxFile}\" \"{romPath}\" \"{rpxFile}\"",
-            cancellationToken: cancellationToken).ConfigureAwait(false);
-
-        // Check for "too large" in output even on success exit code
-        if (!injectResult.Success
-            || injectResult.StandardError.Contains("is too large")
-            || injectResult.StandardOutput.Contains("is too large"))
+        // 3) Inject ROM via native RetroInjectHelper (replaces retroinject.exe)
+        try
+        {
+            RetroInjectHelper.InjectRom(rpxFile, romPath, opt.IsNes, rpxFile);
+        }
+        catch (InvalidOperationException ex) when (ex.Message.Contains("too large"))
         {
             throw new InvalidOperationException("ROM is too large for this base title.");
         }

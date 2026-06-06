@@ -145,7 +145,7 @@ public sealed class InjectOrchestrator : IInjectPipeline
         };
         await N64InjectService.InjectAsync(
             ctx.ToolsPath, baseRomPath, ctx.RomPath,
-            opt, _runner, ct).ConfigureAwait(false);
+            opt, ct).ConfigureAwait(false);
         return ctx.OutPath;
     }
 
