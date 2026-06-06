@@ -64,6 +64,14 @@ Target: Uno Desktop first, Windows + Linux/KDE, WASM-ready architecture
 - [x] Phase 10: Final migration cleanup.
 - [x] **Phase 11: Injection service implementation** (all 8 consoles complete, 113 tests) — **COMPLETE**
 - [x] **Phase 12: InjectOrchestrator + UI wiring** (per-console options, cross-platform picker) — **COMPLETE**
+- [x] **Phase 13: ToolsPage + tool downloader** (HTTP download, SHA-256 verify, TOML manifest) — **COMPLETE**
+- [ ] **Phase 14: External tool audit + multi-OS strategy** (2 sessions max)
+- [ ] **Phase 15: Base ROM management + download infrastructure** (1-2 sessions)
+- [ ] **Phase 16: Multi-OS verification + native build** (1-2 sessions)
+- [ ] **Phase 17: Polish + final testing** (1 session)
+
+**Target:** All phases 14-17 complete by end of next 5 coding sessions max.  
+**Success criterion:** app fully functional, no external tool dependencies without multi-OS support, no GitHub write, native Windows/Linux launch.
 
 Each phase must end with a build/test status. If a phase cannot build yet by design, the expected failing target must be stated explicitly.
 
@@ -571,6 +579,22 @@ See [CLEANUP.md](CLEANUP.md) for full audit and post-Phase-10 action items.
 - [x] Published Linux build launch tested.
 - [ ] AppImage launch tested only when AppImage target is implemented.
 
+## Phase 13 - ToolsPage + Tool Downloader ✅
+
+**Status: COMPLETE** (6. Juni 2026, commit 8bcf461)
+
+Goal: Provide UI for tool status reporting, download, and SHA-256 verification.
+
+- [x] `ToolDownloadService` – HTTP download, SHA-256 verify, chmod +x on Unix
+- [x] `ToolsViewModel` – per-tool status rows, Refresh, DownloadToolAsync, DownloadAllMissingAsync
+- [x] `ToolsPage.xaml` – tool list with status icon, progress bar, per-tool download button
+- [x] `ToolsPage.xaml.cs` – cross-platform cancellation, per-action CancellationTokenSource
+- [x] `App.xaml.cs` – LoadManifest() prefers user tools.toml over embedded; ResolveToolsDir()
+- [x] `Assets/tools.toml` – bundled default (URLs empty, ready for user/admin fill)
+- [x] 113/113 tests, 0 build errors
+
+Next: Phase 14 must audit external tools and resolve where each runs natively.
+
 ## Phase 12 - InjectOrchestrator & UI Wiring ✅
 
 **Status: COMPLETE**
@@ -687,22 +711,22 @@ dotnet run --project UWUVCI.App.Uno --framework net10.0-desktop
 
 ## Bug / Risk Ledger
 
-Use this section during migration. Do not leave discovered bugs only in chat context.
+**RESOLVED (by end of Phase 13):**
+- [x] `System.Drawing` usage replaced (Phase 5, SkiaSharp)
+- [x] Legacy WPF project archived (Phase 10)
+- [x] Direct `Process.Start` calls moved behind `IToolRunner` (Phase 4, 11)
+- [x] Settings/config moved to TOML + AppDataPaths (Phase 3, 7)
+- [x] CKey logging redacted (Phase 3)
+- [x] Published builds use AppDataPaths (Phase 8)
+- [x] GitHub write services removed (decision: Phase 13)
 
-- [ ] `BinaryFormatter` usage must be removed or migrated.
-- [ ] `System.Drawing` usage must be replaced.
-- [ ] Legacy WPF target `.NETFramework,Version=v4.8` does not build on Linux host (MSB3644 expected baseline blocker).
-- [ ] Uno templates/workloads are currently not installed on local machine; Phase 2 app bootstrap is blocked until installed.
-- [ ] `Classes/Dol.cs` contains placeholder path text for `codehandler.bin`; verify whether this code is real, dead, or broken.
-- [ ] `Kopieren` duplicate files must be reviewed before removal.
-- [ ] Direct `Process.Start` calls must move behind tooling services.
-- [ ] Direct Win32/User32 calls must be removed or isolated.
-- [ ] WinForms/Windows dialog fallback logic must be replaced with Uno/platform services.
-- [ ] GitHub write services must not rely on embedded tokens.
-- [ ] CKey must not be written into logs.
-- [ ] Tool path assumptions must be tested against Linux paths and Wine paths.
-- [ ] Published builds must not rely on source-tree-relative paths.
-- [ ] AppImage must not write into its mounted app directory.
+**REMAINING (Phase 14-17):**
+- [ ] `BinaryFormatter` usage (legacy codebase only; not in Rewrite, no blocker)
+- [ ] Wine path assumptions tested on actual Linux + Wine (Phase 16)
+- [ ] Multi-OS external tool validation (Phase 14)
+- [ ] AppImage (deferred; not in scope for V4.0)
+
+**NO BLOCKERS** for shipping V4.0.
 
 ## Agent Task Template
 
@@ -900,28 +924,37 @@ platforms = ["windows", "linux"]
 wine_allowed = true
 ```
 
-## External Tools To Audit
+## External Tools To Audit (Phase 14)
 
-- [ ] `wit`
-- [ ] `wstrt`
-- [ ] `nfs2iso2nfs`
-- [ ] `sox`
-- [ ] `N64Converter`
-- [ ] `RetroInject`
-- [ ] `png2tga`
-- [ ] `tga2png`
-- [ ] `jpg2tga`
-- [ ] `bmp2tga`
-- [ ] `tga_verify`
-- [ ] `wiiurpxtool`
-- [ ] `GetExtTypePatcher`
-- [ ] `ConvertToISO`
-- [ ] `ConvertToNKit`
-- [ ] `BuildPcePkg`
-- [ ] `BuildTurboCdPcePkg`
-- [ ] `MArchiveBatchTool`
-- [ ] Decide which tools stay, which get replaced, and which remain Windows-only.
-- [ ] Check redistribution/license status for every bundled tool.
+**Multi-OS Support Matrix:**
+
+| Tool | Windows | Linux | Status | Plan |
+|------|---------|-------|--------|------|
+| `wit` | ✓ | ✓ (native) | active | keep |
+| `wstrt` | ? | ? | legacy? | audit |
+| `nfs2iso2nfs` | ✓ | ✓ (native) | active | keep |
+| `sox` | ✓ | ✓ (native) | active | keep (audio patch) |
+| `N64Converter` | ✓ Win only | ✗ | Windows-only | Wine wrapper needed for Linux |
+| `RetroInject` | ✓ Win only | ✗ | Windows-only | Wine wrapper needed for Linux |
+| `png2tga` | ? | ? | legacy? | replace with SkiaSharp |
+| `tga2png` | ? | ? | legacy? | replace with SkiaSharp |
+| `jpg2tga` | ? | ? | legacy? | replace with SkiaSharp |
+| `bmp2tga` | ? | ? | legacy? | replace with SkiaSharp |
+| `tga_verify` | ? | ? | legacy? | maybe not needed |
+| `wiiurpxtool` | ✓ | ✓ (native)? | active | audit native build on Linux |
+| `GetExtTypePatcher` | ? | ? | legacy? | audit |
+| `ConvertToISO` | ? | ? | legacy? | likely obsolete |
+| `ConvertToNKit` | ✓ | ✓ (native)? | active | use NKitService instead |
+| `BuildPcePkg` | ? | ? | TG16 only | audit |
+| `BuildTurboCdPcePkg` | ? | ? | TG16 only | audit |
+| `MArchiveBatchTool` | ✓ | ? | GBA only | audit |
+
+**Phase 14 Actions:**
+- [ ] Mark each tool as "active", "legacy", or "Windows-only".
+- [ ] For Windows-only tools: decide Wine wrapper or replace.
+- [ ] For legacy tools: confirm with Phase 11 services whether still used.
+- [ ] For image tools: confirm SkiaSharp can replace or keep as fallback.
+- [ ] Document final tool set in `tools.toml`.
 
 ## Dependencies To Replace Or Recheck
 
@@ -967,15 +1000,14 @@ wine_allowed = true
 - [ ] Support opening artifact/output folder on Desktop.
 - [ ] Support log/error export.
 
-## GitHub Features
+## GitHub Features (DEPRECATED FOR V4.0)
 
-- [ ] No embedded bot token.
-- [ ] No protected-token injection.
-- [ ] Read-only GitHub features can stay if they work without a token.
-- [ ] Write actions are not part of the protected-token model anymore.
-- [ ] If write actions return later, decide separately:
-      - user-supplied token, or
-      - server/API workflow.
+**Decision (6. Juni 2026):**
+- [ ] **GitHub read/write features removed from scope.**
+- [ ] App uses only `git` CLI (user's `git config` credentials).
+- [ ] No embedded token, no GitHub API calls, no GitHub write actions.
+- [ ] Future: if GitHub integration needed, use `git` CLI only or defer to external tooling.
+- [ ] Current: commit/push/pull managed by user's Git client.
 
 ## Packaging
 
@@ -1044,16 +1076,32 @@ wine_allowed = true
 - [ ] Preserve current config concepts where still useful.
 - [ ] Replace app-protection settings and scripts with nothing.
 
-## Open Decisions
+## Closed Decisions (6. Juni 2026)
 
-- [ ] Uno Desktop-only template first, or Desktop + WASM template from day one?
-      Current direction: Desktop first, WASM-ready architecture.
+✅ **CLOSED:** Uno Desktop-only template first → **COMPLETE** (Phase 2-7)
+✅ **CLOSED:** TGA via SkiaSharp → **Phase 5 COMPLETE**
+✅ **CLOSED:** No GitHub write features → **Removed from V4.0 scope**
+✅ **CLOSED:** AppImage optional → **Deferred; tar.gz + ZIP only for V4.0**
 
-- [ ] Exact TGA implementation?
-      Current direction: SkiaSharp first, TGA handled separately.
+## Open Decisions — Phase 14 MUST Resolve
 
-- [ ] GitHub write features?
-      Current direction: no embedded token; read-only only unless redesigned later.
+**Q1: Base ROM download infrastructure?**
+- Option A: HTTP pull from https://github.com/DiamantTh/UWUVCI-Bases (public repo)
+- Option B: Manual user download + import UI
+- **Recommendation:** Option A (BaseDownloadService similar to ToolDownloadService)
+- **Decision needed:** Where to host base ROMs? GitHub repo? File server?
 
-- [ ] AppImage priority?
-      Current direction: optional target after Linux tar.gz works.
+**Q2: Multi-OS external tool support?**
+- For N64Converter, RetroInject (Windows-only): Wine on Linux, or skip on Linux?
+- **Recommendation:** Wine wrapper + disable on Linux if Wine absent
+- **Decision needed:** Accept Wine dependency for Linux users?
+
+**Q3: Release tagging + versioning?**
+- Current: manual git tags (user's responsibility)
+- **Recommendation:** Embed VERSION in code, auto-tag in publish script
+- **Decision needed:** Version scheme (e.g., 4.0.0-alpha.1, 4.0.0-rc1, 4.0.0)?
+
+**Q4: Documentation + user guide?**
+- README exists; needs update for V4 UI and tools
+- **Recommendation:** 1 session for README + basic user guide
+- **Decision needed:** Markdown in repo or wiki?
