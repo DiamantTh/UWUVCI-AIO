@@ -58,16 +58,12 @@ public static class GbaInjectService
                 deleteTempRom = true;
             }
 
-            // 3) Inject into alldata.psb.m
-            // psb.exe was Windows-only. Native C# implementation requires a
-            // PSB.M format reader/writer (MArchive M-encryption + PSB binary
-            // parser). Not yet implemented – contribution welcome.
-            // Dark-filter removal (MArchiveBatchTool) also blocked on this.
-            // See REWRITE_PLAN.md §Phase-18 for the specification needed.
-            throw new PlatformNotSupportedException(
-                "GBA injection requires a native PSB.M implementation that is " +
-                "not yet available. The psb.exe tool was Windows-only; " +
-                "see REWRITE_PLAN.md §Phase-18 for the format specification.");
+            // 3) Inject ROM into alldata.psb.m / alldata.bin (native, no external tool)
+            GbaPsbInjector.InjectRom(baseRomPath, workingRom);
+
+            // 4) Optional dark-filter removal (modifies PSB nodes)
+            if (opt.DarkFilter)
+                await RemoveDarkFilterAsync(toolsPath, baseRomPath, runner, cancellationToken).ConfigureAwait(false);
         }
         finally
         {
@@ -127,19 +123,20 @@ public static class GbaInjectService
         return Task.CompletedTask;
     }
 
-    // ---- Dark-filter removal via MArchiveBatchTool + PSB chain -------------
+    // ---- Dark-filter removal via PSB node modification --------------------
 
     private static Task RemoveDarkFilterAsync(
         string toolsPath, string baseRomPath,
         IToolRunner runner, CancellationToken ct)
     {
-        // MArchiveBatchTool.exe was Windows-only.
-        // Native C# implementation requires MArchive zlib/stream-cipher archive
-        // format + PSB binary format support. Not yet implemented.
-        // See REWRITE_PLAN.md §Phase-18 for the format specification.
+        // The dark-filter node path inside alldata.psb.m for GBA Wii U VC
+        // has not been documented from an open-source reference.
+        // Original code called MArchiveBatchTool with proprietary arguments.
+        // Until the exact PSB key path is known, this feature is unavailable.
+        // See REWRITE_PLAN.md §Phase-18 for outstanding items.
         throw new PlatformNotSupportedException(
-            "GBA dark-filter removal requires a native MArchive/PSB implementation " +
-            "that is not yet available. The MArchiveBatchTool.exe was Windows-only; " +
-            "see REWRITE_PLAN.md §Phase-18 for the format specification.");
+            "GBA dark-filter removal requires knowledge of the specific PSB " +
+            "node path inside alldata.psb.m. That path is not yet documented. " +
+            "See REWRITE_PLAN.md §Phase-18.");
     }
 }
