@@ -1,0 +1,27 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!-- High Contrast palette – maximum accessibility, WCAG AAA target -->
+  <SolidColorBrush x:Key="AppBackgroundBrush"    Color="#000000"/>
+  <SolidColorBrush x:Key="AppSurfaceBrush"       Color="#000000"/>
+  <SolidColorBrush x:Key="AppSurfaceAltBrush"    Color="#1A1A1A"/>
+  <SolidColorBrush x:Key="AppCardBrush"          Color="#0D0D0D"/>
+  <SolidColorBrush x:Key="AppBorderBrush"        Color="#FFFFFF"/>
+  <SolidColorBrush x:Key="AppAccentBrush"        Color="#FFFF00"/>
+  <SolidColorBrush x:Key="AppAccentSoftBrush"    Color="#FFE640"/>
+  <SolidColorBrush x:Key="AppAccentAltBrush"     Color="#FFD700"/>
+  <SolidColorBrush x:Key="AppTextBrush"          Color="#FFFFFF"/>
+  <SolidColorBrush x:Key="AppMutedTextBrush"     Color="#FFFFFF"/>
+  <SolidColorBrush x:Key="AppTextOnAccentBrush"  Color="#000000"/>
+
+  <LinearGradientBrush x:Key="AppHeaderBrush" StartPoint="0,0" EndPoint="1,1">
+    <GradientStop Color="#000000" Offset="0"/>
+    <GradientStop Color="#000000" Offset="1"/>
+  </LinearGradientBrush>
+
+  <LinearGradientBrush x:Key="AppMenuBrush" StartPoint="0,0" EndPoint="0,1">
+    <GradientStop Color="#000000" Offset="0"/>
+    <GradientStop Color="#000000" Offset="1"/>
+  </LinearGradientBrush>
+
+</ResourceDictionary>

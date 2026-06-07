@@ -1,0 +1,27 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!-- Terminal Green palette – retro monochrome phosphor terminal -->
+  <SolidColorBrush x:Key="AppBackgroundBrush"    Color="#060C06"/>
+  <SolidColorBrush x:Key="AppSurfaceBrush"       Color="#0C140C"/>
+  <SolidColorBrush x:Key="AppSurfaceAltBrush"    Color="#101A10"/>
+  <SolidColorBrush x:Key="AppCardBrush"          Color="#040A04"/>
+  <SolidColorBrush x:Key="AppBorderBrush"        Color="#1A3C1A"/>
+  <SolidColorBrush x:Key="AppAccentBrush"        Color="#39D353"/>
+  <SolidColorBrush x:Key="AppAccentSoftBrush"    Color="#2ECC42"/>
+  <SolidColorBrush x:Key="AppAccentAltBrush"     Color="#00FF41"/>
+  <SolidColorBrush x:Key="AppTextBrush"          Color="#C8FFCA"/>
+  <SolidColorBrush x:Key="AppMutedTextBrush"     Color="#5A8C5C"/>
+  <SolidColorBrush x:Key="AppTextOnAccentBrush"  Color="#040A04"/>
+
+  <LinearGradientBrush x:Key="AppHeaderBrush" StartPoint="0,0" EndPoint="1,1">
+    <GradientStop Color="#040A04" Offset="0"/>
+    <GradientStop Color="#060E06" Offset="1"/>
+  </LinearGradientBrush>
+
+  <LinearGradientBrush x:Key="AppMenuBrush" StartPoint="0,0" EndPoint="0,1">
+    <GradientStop Color="#060C06" Offset="0"/>
+    <GradientStop Color="#0A140A" Offset="1"/>
+  </LinearGradientBrush>
+
+</ResourceDictionary>

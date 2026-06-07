@@ -134,17 +134,22 @@ public partial class App : Application
         if (string.Equals(normalized, _currentTheme, StringComparison.OrdinalIgnoreCase))
             return;
 
-        var uri = normalized.Equals("Light", StringComparison.OrdinalIgnoreCase)
-            ? new Uri("ms-appx:///Themes/Theme.Light.xaml")
-            : new Uri("ms-appx:///Themes/Theme.Dark.xaml");
+        var uri = normalized switch
+        {
+            { } t when t.Equals("Light",         StringComparison.OrdinalIgnoreCase) => new Uri("ms-appx:///Themes/Theme.Light.xaml"),
+            { } t when t.Equals("WiiUBlue",       StringComparison.OrdinalIgnoreCase) => new Uri("ms-appx:///Themes/Theme.WiiUBlue.xaml"),
+            { } t when t.Equals("TerminalGreen",  StringComparison.OrdinalIgnoreCase) => new Uri("ms-appx:///Themes/Theme.TerminalGreen.xaml"),
+            { } t when t.Equals("HighContrast",   StringComparison.OrdinalIgnoreCase) => new Uri("ms-appx:///Themes/Theme.HighContrast.xaml"),
+            _                                                                          => new Uri("ms-appx:///Themes/Theme.Dark.xaml"),
+        };
 
         var merged = Application.Current.Resources.MergedDictionaries;
 
-        // Remove the previous theme dict (last one added by convention)
+        // Remove the previous theme dict (identified by the Theme. filename prefix)
         for (int i = merged.Count - 1; i >= 0; i--)
         {
             var src = merged[i].Source?.OriginalString ?? "";
-            if (src.Contains("Theme.Dark") || src.Contains("Theme.Light"))
+            if (src.Contains("/Themes/Theme."))
             {
                 merged.RemoveAt(i);
                 break;

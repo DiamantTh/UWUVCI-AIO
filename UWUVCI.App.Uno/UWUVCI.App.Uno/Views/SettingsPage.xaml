@@ -78,9 +78,12 @@
         <ComboBox SelectedItem="{x:Bind ViewModel.Theme, Mode=TwoWay}"
                   Background="{ThemeResource AppCardBrush}"
                   Foreground="{ThemeResource AppTextBrush}"
-                  HorizontalAlignment="Left" MinWidth="160">
+                  HorizontalAlignment="Left" MinWidth="180">
           <x:String>Dark</x:String>
           <x:String>Light</x:String>
+          <x:String>WiiUBlue</x:String>
+          <x:String>TerminalGreen</x:String>
+          <x:String>HighContrast</x:String>
         </ComboBox>
       </StackPanel>
 

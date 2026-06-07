@@ -1,0 +1,27 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!-- Wii U Blue palette – inspired by the Wii U GamePad system colour -->
+  <SolidColorBrush x:Key="AppBackgroundBrush"    Color="#0D1628"/>
+  <SolidColorBrush x:Key="AppSurfaceBrush"       Color="#132040"/>
+  <SolidColorBrush x:Key="AppSurfaceAltBrush"    Color="#1A2B50"/>
+  <SolidColorBrush x:Key="AppCardBrush"          Color="#0A1220"/>
+  <SolidColorBrush x:Key="AppBorderBrush"        Color="#1E3A6E"/>
+  <SolidColorBrush x:Key="AppAccentBrush"        Color="#009AC7"/>
+  <SolidColorBrush x:Key="AppAccentSoftBrush"    Color="#0AB9E6"/>
+  <SolidColorBrush x:Key="AppAccentAltBrush"     Color="#0078A8"/>
+  <SolidColorBrush x:Key="AppTextBrush"          Color="#E0ECFF"/>
+  <SolidColorBrush x:Key="AppMutedTextBrush"     Color="#6A90C0"/>
+  <SolidColorBrush x:Key="AppTextOnAccentBrush"  Color="#FFFFFF"/>
+
+  <LinearGradientBrush x:Key="AppHeaderBrush" StartPoint="0,0" EndPoint="1,1">
+    <GradientStop Color="#0A1528" Offset="0"/>
+    <GradientStop Color="#0D1F3C" Offset="1"/>
+  </LinearGradientBrush>
+
+  <LinearGradientBrush x:Key="AppMenuBrush" StartPoint="0,0" EndPoint="0,1">
+    <GradientStop Color="#0F1E3A" Offset="0"/>
+    <GradientStop Color="#132040" Offset="1"/>
+  </LinearGradientBrush>
+
+</ResourceDictionary>

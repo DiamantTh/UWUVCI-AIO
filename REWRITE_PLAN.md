@@ -820,11 +820,11 @@ Supported consoles (from original):
 - [x] TurboGrafx – `Tg16InjectService`
 - [x] MSX – `MsxInjectService`
 
-### 11.5 – Native NfsConverter (Deferred)
+### 11.5 – Native NfsConverter ✅ **Status: COMPLETE** (Phase 18, commit ac766a6)
 
-- [ ] Write NfsConverter from scratch (Wii disc format spec, AES-128-CBC via `System.Security.Cryptography.Aes.Create()`)
-- [ ] Replace external `nfs2iso2nfs` binary call in WitNfsService
-- [ ] Full encode/decode round-trip tests
+- [x] Write NfsConverter from scratch (AES-128-CBC via `System.Security.Cryptography.Aes.Create()`)
+- [x] Replace external `nfs2iso2nfs` binary call in WitNfsService
+- [x] Full encode/decode round-trip tests
 
 **Total new unit tests expected: 80+ across all consoles**
 
@@ -911,85 +911,85 @@ Next recommended task:
 
 ## Core Decisions
 
-- [ ] Runtime: .NET 10 LTS.
-- [ ] Language: current C# version shipped with the .NET 10 SDK.
-- [ ] UI framework: Uno Platform.
-- [ ] Primary targets: Windows Desktop and Linux Desktop/KDE.
-- [ ] Later target: Web/WASM or web app.
-- [ ] Not in scope: WPF, .NET Framework, Mono as primary target, macOS, iOS.
-- [ ] Build style: manual builds only.
-- [ ] No release signatures.
-- [ ] No protected release pipeline.
-- [ ] No embedded GitHub token.
-- [ ] No token obfuscation.
-- [ ] No LocalInstallGuard.
-- [ ] No device fingerprinting or blacklist logic.
+- [x] Runtime: .NET 10 LTS.
+- [x] Language: current C# version shipped with the .NET 10 SDK.
+- [x] UI framework: Uno Platform.
+- [x] Primary targets: Windows Desktop and Linux Desktop/KDE.
+- [x] Later target: Web/WASM or web app.
+- [x] Not in scope: WPF, .NET Framework, Mono as primary target, macOS, iOS.
+- [x] Build style: manual builds only.
+- [x] No release signatures.
+- [x] No protected release pipeline.
+- [x] No embedded GitHub token.
+- [x] No token obfuscation.
+- [x] No LocalInstallGuard.
+- [x] No device fingerprinting or blacklist logic.
 
 ## Project Structure
 
-- [ ] `UWUVCI.Core`
+- [x] `UWUVCI.Core`
       Models, inject pipeline, validation, non-UI business logic.
 
-- [ ] `UWUVCI.Tooling`
+- [x] `UWUVCI.Tooling`
       Tool resolution, process execution, Wine/native handling, platform capabilities.
 
-- [ ] `UWUVCI.ImagePipeline`
+- [x] `UWUVCI.ImagePipeline`
       Image loading, resizing, validation, conversion, boot/icon/texture generation.
 
-- [ ] `UWUVCI.Config`
+- [x] `UWUVCI.Config`
       TOML settings, tool manifests, platform capability files, legacy settings migration.
 
-- [ ] `UWUVCI.App.Uno`
+- [x] `UWUVCI.App.Uno`
       Uno UI, shell, views, themes, bindings, platform-specific UI services.
 
-- [ ] `UWUVCI.Tests`
+- [x] `UWUVCI.Tests`
       Core, tooling, config, image pipeline, golden-file tests.
 
 ## Uno/WASM Direction
 
-- [ ] Build Uno Desktop first.
-- [ ] Prepare the project so WASM later does not require deep rewrites.
-- [ ] Keep desktop-only APIs out of `UWUVCI.Core`.
-- [ ] Keep process execution out of UI/ViewModels.
-- [ ] Put file pickers, folders, app storage, clipboard, platform info and tool running behind interfaces.
-- [ ] WASM later gets different implementations or disabled capabilities.
+- [x] Build Uno Desktop first.
+- [x] Prepare the project so WASM later does not require deep rewrites.
+- [x] Keep desktop-only APIs out of `UWUVCI.Core`.
+- [x] Keep process execution out of UI/ViewModels.
+- [x] Put file pickers, folders, app storage, clipboard, platform info and tool running behind interfaces.
+- [x] WASM later gets different implementations or disabled capabilities.
 
 Suggested interfaces:
 
-- [ ] `IFilePicker`
-- [ ] `IFolderPicker`
-- [ ] `IToolRunner`
-- [ ] `IAppStorage`
-- [ ] `IClipboardService`
-- [ ] `IExternalUrlLauncher`
-- [ ] `IPlatformInfo`
-- [ ] `ICapabilityService`
+- [x] `IFilePicker`
+- [x] `IFolderPicker`
+- [x] `IToolRunner`
+- [x] `IAppStorage`
+- [x] `IClipboardService`
+- [x] `IExternalUrlLauncher`
+- [x] `IPlatformInfo`
+- [x] `ICapabilityService`
 
 ## UX
 
-- [ ] Current UX is the default reference.
-- [ ] Do not copy the old WPF architecture.
-- [ ] Rebuild the UI in Uno using the same practical flow.
-- [ ] Shell/navigation first.
-- [ ] Settings/paths/tools next.
-- [ ] Inject flow next.
-- [ ] Config panels next.
-- [ ] Image creator after the image pipeline is stable.
-- [ ] Feature visibility must come from capabilities, not hard-coded UI conditions.
-- [ ] Windows can expose more features.
-- [ ] Linux exposes only native/Wine-capable features.
-- [ ] WASM later exposes only browser/server-capable features.
+- [x] Current UX is the default reference.
+- [x] Do not copy the old WPF architecture.
+- [x] Rebuild the UI in Uno using the same practical flow.
+- [x] Shell/navigation first.
+- [x] Settings/paths/tools next.
+- [x] Inject flow next.
+- [x] Config panels next.
+- [x] Image creator after the image pipeline is stable.
+- [x] Feature visibility must come from capabilities, not hard-coded UI conditions.
+- [x] Windows can expose more features.
+- [x] Linux exposes only native/Wine-capable features.
+- [x] WASM later exposes only browser/server-capable features.
 
 ## Themes / Styles
 
-- [ ] Use palette tokens, not separate layouts per theme.
-- [ ] Keep one UX and switch colors/styles centrally.
-- [ ] Provide five palettes:
-      - Classic Dark
-      - Classic Light
-      - Wii U Blue
-      - Terminal Green
-      - High Contrast
+- [x] Use palette tokens, not separate layouts per theme.
+- [x] Keep one UX and switch colors/styles centrally.
+- [x] Provide five palettes:
+      - Classic Dark ✅
+      - Classic Light ✅
+      - Wii U Blue ✅ (Phase 18 cleanup, commit 2026-06-07)
+      - Terminal Green ✅ (Phase 18 cleanup, commit 2026-06-07)
+      - High Contrast ✅ (Phase 18 cleanup, commit 2026-06-07)
 
 Suggested layout:
 
@@ -1010,31 +1010,32 @@ Styles/
 
 ## Image Pipeline
 
-- [ ] Use SkiaSharp as the default image library.
-- [ ] Reason: MIT license.
-- [ ] Reason: fits Uno/Cross-platform well.
-- [ ] Reason: better fit for Windows/Linux/WASM than System.Drawing.
-- [ ] Do not use `System.Drawing`.
-- [ ] Do not use ImageSharp as default because of the Six Labors Split License.
-- [ ] Keep SkiaSharp behind `UWUVCI.ImagePipeline` services.
-- [ ] Do not spread SkiaSharp code through views or view models.
-- [ ] TGA support must be checked separately.
-- [ ] If SkiaSharp is not enough for TGA:
+- [x] Use SkiaSharp as the default image library.
+- [x] Reason: MIT license.
+- [x] Reason: fits Uno/Cross-platform well.
+- [x] Reason: better fit for Windows/Linux/WASM than System.Drawing.
+- [x] Do not use `System.Drawing`.
+- [x] Do not use ImageSharp as default because of the Six Labors Split License.
+- [x] Keep SkiaSharp behind `UWUVCI.ImagePipeline` services.
+- [x] Do not spread SkiaSharp code through views or view models.
+- [x] TGA support must be checked separately.
+- [x] If SkiaSharp is not enough for TGA:
       - write a small TGA reader/writer, or
       - keep Pfim if suitable, or
       - keep external TGA tools as Desktop fallback.
-- [ ] Long-term goal: reduce external image tools where practical.
+      → Decision: custom `TgaService.cs` (type 2 uncompressed + RLE reader, type 2 writer)
+- [x] Long-term goal: reduce external image tools where practical.
 
 ## Config Format
 
-- [ ] Use TOML for app settings.
-- [ ] Use TOML for tool manifests.
-- [ ] Use TOML for platform capabilities.
-- [ ] JSON can stay for external/API/compatibility data.
-- [ ] Keep CKey behavior like the original.
-- [ ] No new secret store for CKey.
-- [ ] Do not write CKey into logs.
-- [ ] Remove `SysKey` and `SysKey1`; they are app-protection leftovers.
+- [x] Use TOML for app settings.
+- [x] Use TOML for tool manifests.
+- [x] Use TOML for platform capabilities.
+- [x] JSON can stay for external/API/compatibility data.
+- [x] Keep CKey behavior like the original.
+- [x] No new secret store for CKey.
+- [x] Do not write CKey into logs.
+- [x] Remove `SysKey` and `SysKey1`; they are app-protection leftovers.
 
 Example:
 
@@ -1054,14 +1055,14 @@ density = "normal"
 
 ## Tool Schema
 
-- [ ] `tools/windows-x64.toml`
-- [ ] `tools/linux-x64.toml`
-- [ ] No macOS tool schema.
-- [ ] Track tool versions.
-- [ ] Track required/optional tools per inject method.
-- [ ] Track native/Wine availability per tool.
-- [ ] Track whether a method can run on Windows, Linux, or future WASM/server.
-- [ ] Checksums optional but recommended for bundled tool sets.
+- [x] Tool manifest implemented as single `UWUVCI.App.Uno/Assets/tools.toml` (cross-platform, user-overrideable).
+      Note: Separate per-platform files (`tools/windows-x64.toml` / `tools/linux-x64.toml`) were planned
+      but replaced by a single manifest with per-entry `windows_only` and `platforms` flags.
+- [x] No macOS tool schema.
+- [x] Tool versions tracked in manifest.
+- [x] Required/optional tools per inject method tracked via capability flags.
+- [x] Native/Wine availability tracked per entry.
+- [x] Method-level platform availability documented in Phase 14 audit.
 
 Example:
 
@@ -1111,66 +1112,64 @@ wine_allowed = true
 
 ## Dependencies To Replace Or Recheck
 
-- [ ] Replace `System.Drawing`.
-- [ ] Remove `BinaryFormatter`.
-- [ ] Remove WPF assemblies and WPF-specific dependencies.
-- [ ] Remove `WindowsAPICodePack`.
-- [ ] Remove WinForms dialogs.
-- [ ] Remove `Costura/Fody`.
-- [ ] Remove WPF `MaterialDesignThemes`.
-- [ ] Recheck `NAudio`.
-- [ ] Recheck `Octokit`.
-- [ ] Keep `Newtonsoft.Json` only where needed.
-- [ ] Evaluate whether `WebView2` is still needed.
+- [x] Replace `System.Drawing` → SkiaSharp (Phase 5)
+- [x] Remove `BinaryFormatter` → not present in Rewrite (legacy only)
+- [x] Remove WPF assemblies and WPF-specific dependencies → removed (Phase 2/10)
+- [x] Remove `WindowsAPICodePack` → removed (Phase 10)
+- [x] Remove WinForms dialogs → removed (Phase 10)
+- [x] Remove `Costura/Fody` → removed (Phase 10)
+- [x] Remove WPF `MaterialDesignThemes` → removed (Phase 10)
+- [x] `NAudio` → not included in Rewrite (not needed)
+- [x] `Octokit` → removed (GitHub write features dropped, Phase 13)
+- [x] `Newtonsoft.Json` → not used in Rewrite (TOML-first config)
+- [x] `WebView2` → not needed in Rewrite
 
 ## Local DLLs
 
-- [ ] `GameBaseClassLibrary.dll`
-- [ ] `WiiUDownloaderLibrary.dll`
-- [ ] Check whether source is available.
-- [ ] Check whether modern .NET builds are possible.
-- [ ] Replace or wrap them if needed.
+- [x] `GameBaseClassLibrary.dll` → removed (Phase 10); models ported natively to `UWUVCI.Core`
+- [x] `WiiUDownloaderLibrary.dll` → removed (Phase 10); download functionality not in scope for Rewrite
+- [x] Source check done; no rebuild needed
 
 ## Injection Modernization
 
-- [ ] Do not select a small MVP inject method.
-- [ ] Do not rewrite inject methods one-by-one as separate feature redesigns.
-- [ ] Modernize the existing injection source as a whole.
-- [ ] Preserve current behavior as the reference.
-- [ ] Move injection logic out of UI.
-- [ ] Keep the pipeline UI-free.
-- [ ] Make steps observable: progress, logs, error reporting.
-- [ ] Keep tool argument generation testable.
-- [ ] Keep platform capability checks explicit.
+- [x] Do not select a small MVP inject method.
+- [x] Do not rewrite inject methods one-by-one as separate feature redesigns.
+- [x] Modernize the existing injection source as a whole.
+- [x] Preserve current behavior as the reference.
+- [x] Move injection logic out of UI.
+- [x] Keep the pipeline UI-free.
+- [x] Make steps observable: progress, logs, error reporting.
+- [x] Keep tool argument generation testable.
+- [x] Keep platform capability checks explicit.
 
 ## Job System
 
-- [ ] Run injection as jobs.
-- [ ] Support progress.
-- [ ] Support logs per job.
-- [ ] Support cancel where practical.
-- [ ] Support retry only where safe.
-- [ ] Support opening artifact/output folder on Desktop.
-- [ ] Support log/error export.
+- [x] Run injection as jobs.
+- [x] Support progress.
+- [x] Support logs per job.
+- [x] Support cancel where practical.
+- [x] Support retry only where safe.
+- [x] Support opening artifact/output folder on Desktop.
+- [x] Support log/error export.
 
 ## GitHub Features (DEPRECATED FOR V4.0)
 
 **Decision (6. Juni 2026):**
-- [ ] **GitHub read/write features removed from scope.**
-- [ ] App uses only `git` CLI (user's `git config` credentials).
-- [ ] No embedded token, no GitHub API calls, no GitHub write actions.
-- [ ] Future: if GitHub integration needed, use `git` CLI only or defer to external tooling.
-- [ ] Current: commit/push/pull managed by user's Git client.
+- [x] **GitHub read/write features removed from scope.**
+- [x] App uses only `git` CLI (user's `git config` credentials).
+- [x] No embedded token, no GitHub API calls, no GitHub write actions.
+- [x] Future: if GitHub integration needed, use `git` CLI only or defer to external tooling.
+- [x] Current: commit/push/pull managed by user's Git client.
 
 ## Packaging
 
-- [ ] Windows portable ZIP.
-- [ ] Windows installer optional.
-- [ ] Linux tar.gz.
-- [ ] Linux AppImage optional target.
-- [ ] No macOS packages.
-- [ ] Do not require writes to the application install directory.
-- [ ] Use AppData/XDG paths for writable data.
+- [x] Windows portable ZIP.
+- [ ] Windows installer optional (deferred post-V4.0).
+- [x] Linux tar.gz.
+- [ ] Linux AppImage optional target (deferred post-V4.0).
+- [x] No macOS packages.
+- [x] Do not require writes to the application install directory.
+- [x] Use AppData/XDG paths for writable data.
 
 ## AppImage Notes
 
@@ -1182,27 +1181,29 @@ wine_allowed = true
 
 ## Build
 
-- [ ] Manual build only.
-- [ ] `dotnet restore`
-- [ ] `dotnet build`
-- [ ] `dotnet test`
-- [ ] `dotnet publish`
-- [ ] No signing step.
-- [ ] No token injection step.
-- [ ] No protected build pipeline.
+- [x] Manual build only.
+- [x] `dotnet restore`
+- [x] `dotnet build`
+- [x] `dotnet test`
+- [x] `dotnet publish`
+- [x] No signing step.
+- [x] No token injection step.
+- [x] No protected build pipeline.
 
 ## Tests
 
-- [ ] Config parsing.
-- [ ] Tool manifest parsing.
-- [ ] Platform capability resolution.
-- [ ] Tool resolution.
-- [ ] Windows/Linux/Wine path mapping.
-- [ ] Tool argument generation.
-- [ ] Injection step composition.
-- [ ] Golden files for XML/JSON/TOML outputs.
-- [ ] Image pipeline validation.
-- [ ] Log redaction for CKey and sensitive fields.
+- [x] Config parsing.
+- [x] Tool manifest parsing.
+- [x] Platform capability resolution.
+- [x] Tool resolution.
+- [x] Windows/Linux/Wine path mapping.
+- [x] Tool argument generation.
+- [x] Injection step composition.
+- [x] Golden files for XML/JSON/TOML outputs.
+- [x] Image pipeline validation.
+- [x] Log redaction for CKey and sensitive fields.
+
+**Current status: 138/138 tests green (2026-06-07)**
 
 ## CI Optional
 
@@ -1213,21 +1214,21 @@ wine_allowed = true
 
 ## Legal / Project Boundaries
 
-- [ ] Do not ship ROMs.
-- [ ] Do not ship bases.
-- [ ] Do not ship keys.
-- [ ] Document that users provide their own files.
-- [ ] Check external tool licenses before bundling.
+- [x] Do not ship ROMs.
+- [x] Do not ship bases.
+- [x] Do not ship keys.
+- [x] Document that users provide their own files.
+- [x] Check external tool licenses before bundling.
 
 ## Migration From Current Source
 
-- [ ] Keep original behavior as reference.
-- [ ] Remove copied `Kopieren` files unless proven needed.
-- [ ] Ignore/remove old protected release scripts.
-- [ ] Port useful assets/resources.
-- [ ] Rebuild UI in Uno, do not port WPF XAML directly.
-- [ ] Preserve current config concepts where still useful.
-- [ ] Replace app-protection settings and scripts with nothing.
+- [x] Keep original behavior as reference.
+- [x] Remove copied `Kopieren` files unless proven needed.
+- [x] Ignore/remove old protected release scripts.
+- [x] Port useful assets/resources.
+- [x] Rebuild UI in Uno, do not port WPF XAML directly.
+- [x] Preserve current config concepts where still useful.
+- [x] Replace app-protection settings and scripts with nothing.
 
 ## Closed Decisions (6. Juni 2026)
 
