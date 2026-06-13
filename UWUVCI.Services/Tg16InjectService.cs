@@ -49,27 +49,50 @@ public static class Tg16InjectService
         string toolsPath, string tempPath, string romDir,
         IToolRunner runner, CancellationToken ct)
     {
-        // BuildTurboCDPcePkg.exe was Windows-only.
-        // Native C# implementation requires knowledge of the Wii U TG16 pce.pkg
-        // container format for TurboCD disc images. Not yet implemented.
-        // See REWRITE_PLAN.md §Phase-18 for the format specification.
-        throw new PlatformNotSupportedException(
-            "TurboCD injection requires a native pce.pkg builder for disc images " +
-            "that is not yet available. The BuildTurboCDPcePkg.exe was Windows-only; " +
-            "see REWRITE_PLAN.md §Phase-18 for the format specification.");
+        // Copy input directory to temp "test" folder
+        var testDir = Path.Combine(tempPath, "test");
+        Directory.CreateDirectory(testDir);
+        foreach (var file in Directory.GetFiles(romDir, "*", SearchOption.AllDirectories))
+        {
+            var rel = file.Substring(romDir.Length).TrimStart(Path.DirectorySeparatorChar);
+            var target = Path.Combine(testDir, rel);
+            Directory.CreateDirectory(Path.GetDirectoryName(target)!);
+            File.Copy(file, target, overwrite: true);
+        }
+
+        try
+        {
+            // Use native C# builder
+            var pcePkg = Path.Combine(tempPath, "pce.pkg");
+            TurboGrafx16PkgBuilder.BuildPcePkg(testDir, pcePkg);
+            return Task.FromResult(pcePkg);
+        }
+        catch (FileNotFoundException ex) when (ex.Message.Contains(".hcd") || ex.Message.Contains(".ogg") || ex.Message.Contains(".bin"))
+        {
+            throw new InvalidOperationException(
+                $"TurboCD directory is missing required files (.hcd, .ogg, .bin). {ex.Message}", ex);
+        }
+        finally
+        {
+            // Clean up
+            try { if (Directory.Exists(testDir)) Directory.Delete(testDir, recursive: true); } catch { }
+        }
     }
 
     private static Task<string> BuildTg16PkgAsync(
         string toolsPath, string tempPath, string romPath,
         IToolRunner runner, CancellationToken ct)
     {
-        // BuildPcePkg.exe was Windows-only.
-        // Native C# implementation requires knowledge of the Wii U pce.pkg
-        // container format. Not yet implemented.
-        // See REWRITE_PLAN.md §Phase-18 for the format specification.
+        // TG16 single ROM input is treated as a pre-packaged directory structure.
+        // The original BuildPcePkg.exe was a Windows-only binary that required
+        // pre-existing .hcd, .ogg, and .bin files in a specific layout.
+        // Since TG16 injection is less common and requires significant pre-processing
+        // (ROM → HCD + OGG + BIN conversion), this remains a future enhancement.
+        // Users can instead provide pre-packaged TurboCD-style directories.
         throw new PlatformNotSupportedException(
-            "TG16 injection requires a native pce.pkg builder that is not yet " +
-            "available. The BuildPcePkg.exe was Windows-only; " +
-            "see REWRITE_PLAN.md §Phase-18 for the format specification.");
+            "Direct TG16 ROM injection is not yet supported. " +
+            "Please provide a TurboCD-style directory with .hcd, .ogg, and .bin files, " +
+            "or generate the pce.pkg file externally and copy it to content/pceemu/pce.pkg " +
+            "in the base game folder.");
     }
 }

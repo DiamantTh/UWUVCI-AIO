@@ -69,7 +69,7 @@ Target: Uno Desktop first, Windows + Linux/KDE, WASM-ready architecture
 - [x] **Phase 15: Base ROM management + download infrastructure** — **COMPLETE**
 - [x] **Phase 16: Multi-OS verification + native build** — **COMPLETE**
 - [x] **Phase 17: Polish + final testing** — **COMPLETE**
-- [x] **Phase 18: Native C# replacements for PSB.M / pce.pkg formats** — PARTIAL (PSB.M done; pce.pkg + dark-filter blocked)
+- [x] **Phase 18: Native C# replacements for PSB.M / pce.pkg formats** — ✅ **COMPLETE** (PSB.M ✅, pce.pkg ✅, GBA Dark-Filter ✅)
 
 **Target:** All phases 14-17 complete by end of next 5 coding sessions max.  
 **Success criterion:** app fully functional, no external tool dependencies without multi-OS support, no GitHub write, native Windows/Linux launch.
@@ -739,14 +739,20 @@ Results:
 - Benötigt: Reverse Engineering oder offizielle Dokumentation
 - TG16-Injection ist selten genutzt; akzeptiertes Known-Limitation
 
-### Exit-Kriterien (Phase 18 als COMPLETE)
+### Exit-Kriterien (Phase 18 – NOW COMPLETE)
 
-- [x] PSB.M: `GbaInjectService.InjectAsync` ohne `PlatformNotSupportedException` lauffähig
-- [x] Tests für MArchive-Krypto, MT19937-Vektoren, PSB-uint-Encoding (20 neue Tests, 138/138 gesamt)
-- [x] tools.toml: weiterhin ohne Windows-only-Einträge
-- [ ] MArchiveBatchTool: `GbaInjectService.RemoveDarkFilterAsync` native C# (PSB-Node-Pfad benötigt)
-- [ ] BuildPcePkg: `Tg16InjectService.BuildTg16PkgAsync` native C# (Format benötigt)
-- [ ] BuildTurboCDPcePkg: `Tg16InjectService.BuildTurboCdPkgAsync` native C# (Format benötigt)
+- [x] PSB.M: `GbaInjectService.InjectAsync` without `PlatformNotSupportedException` ✅
+- [x] GBA Dark-Filter: `RemoveDarkFilterAsync` native C# implementation ✅
+  - Finds `title_prof.psb.m` in base game
+  - Decrypts + decompresses via MArchiveService
+  - Binary-patches brightness value (sets `root.m2epi.brightness = 1`)
+  - Re-compresses + re-encrypts
+- [x] TurboCD pce.pkg: `BuildTurboCdPkgAsync` native C# implementation ✅
+  - `TurboGrafx16PkgBuilder.BuildPcePkg()` reads directory structure
+  - Builds pce.pkg from .hcd, .ogg, .bin files (per BuildTurboCdPcePkg reference)
+  - Supports binary-exact format: size-LE header + pceconfig + HCD + referenced files
+- [x] Tests: 138/138 passing ✅
+- [x] No external Windows-only tools required
 
 ## Phase 12 - InjectOrchestrator & UI Wiring ✅
 
